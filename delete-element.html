@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Manager - Delete an element</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+
+<body>
+    <div class="class-box">
+        <h1>Football Club Manager</h1>
+        <p>Faut changer la phrase Timothé haha</p>
+
+        <div class="menu-icon-2">
+            <div class="icon-group">
+                <a href="home.html" class="icon-link" title="Home">
+                    <img src="For_css/home-icon.png" alt="Home" class="icon">
+                </a>
+            </div>
+        </div>
+
+        <div class="border">
+            <h1 class="Title_delete_elem-2">Delete an element</h1>
+            <div class="menu">
+                <div class="delete-element">
+                    <div class="dropdown">
+                        <h2>Club</h2>
+                        <input type="text" placeholder="Delete a whole club or select it" list="clubs">
+                        <datalist id="clubs">
+                            <option value="Real Madrid">
+                            <option value="Manchester City">
+                            <option value="Barcelona">
+                        </datalist>
+                        <!-- Boutons pour Club -->
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+            
+                    <div class="dropdown">
+                        <h2>Team</h2>
+                        <input type="text" placeholder="Delete a whole team or select it" list="teams">
+                        <datalist id="teams">
+                            <option value="U 14">
+                            <option value="U 16">
+                            <option value="U 19">
+                        </datalist>
+                        <!-- Boutons pour Team -->
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+            
+                    <div class="dropdown">
+                        <h2>Players</h2>
+                        <input type="text" placeholder="Delete a player">
+                        <!-- Bouton pour Players uniquement "Add" -->
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            </div>
+        </div>
+    </div>
+</body>
+</html>

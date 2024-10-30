@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+
+<body>
+    <div class="class-box">
+        <h1>Football Club Manager</h1>
+        <p>Welcome to the best site to manage your football club.</p>
+
+        <div class="border">
+            <div class="menu">
+                <div class="dropdown">
+                    <h2>Club</h2>
+                    <input type="text" placeholder="Select Club" list="clubs">
+                    <datalist id="clubs">
+                        <option value="Real Madrid">
+                        <option value="Manchester City">
+                        <option value="Barcelona">
+                    </datalist>
+                </div>
+
+                <div class="dropdown">
+                    <h2>Team</h2>
+                    <input type="text" placeholder="Select Team" list="teams">
+                    <datalist id="teams">
+                        <option value="U 14">
+                        <option value="U 16">
+                        <option value="U 19">
+                    </datalist>
+                </div>
+
+                <div class="column">
+                    <h2>Players</h2>
+                </div>
+            </div>
+
+            <div class="menu-icon">
+                <div class="icon-group">
+                    <a href="add-element.html" class="icon-link" title="Add Element">
+                        <img src="For_css/plus-icon.png" alt="Add" class="icon">
+                    </a>
+                    <a href="delete-element.html" class="icon-link" title="Delete Element">
+                        <img src="For_css/delete-icon.png" alt="Delete" class="icon">
+                    </a>
+                    <a href="modify-element.html" class="icon-link" title="Modify Element">
+                        <img src="For_css/edit-icon.png" alt="Modify" class="icon">
+                    </a>
+                </div>
+            </div>
+
+            <h1 class="Title_add_elem">Add a new element</h1>
+            <div class="menu">
+                <div class="add-element">
+                    <div class="dropdown">
+                        <h2>Club</h2>
+                        <input type="text" placeholder="Write a new club's name | Select Club" list="clubs">
+                        <datalist id="clubs">
+                            <option value="Real Madrid">
+                            <option value="Manchester City">
+                            <option value="Barcelona">
+                        </datalist>
+                        <!-- Boutons pour Club -->
+                        <div class="button-group">
+                            <button class="add-button">Add</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+            
+                    <div class="dropdown">
+                        <h2>Team</h2>
+                        <input type="text" placeholder="Write a new type of team | Select Team" list="teams">
+                        <datalist id="teams">
+                            <option value="U 14">
+                            <option value="U 16">
+                            <option value="U 19">
+                        </datalist>
+                        <!-- Boutons pour Team -->
+                        <div class="button-group">
+                            <button class="add-button">Add</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+            
+                    <div class="dropdown">
+                        <h2>Players</h2>
+                        <input type="text" placeholder="Write a new player's name">
+                        <!-- Bouton pour Players uniquement "Add" -->
+                        <div class="button-group">
+                            <button class="add-button">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <h1 class="Title_delete_elem">Delete an element </h1>
+            <div class="menu">
+                <div class="delete-element">
+                    <div class="dropdown">
+                        <h2>Club</h2>
+                        <input type="text" placeholder="Write a new club's name | Select Club" list="clubs">
+                        <datalist id="clubs">
+                            <option value="Real Madrid">
+                            <option value="Manchester City">
+                            <option value="Barcelona">
+                        </datalist>
+
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <h2>Team</h2>
+                        <input type="text" placeholder="Write a new type of team | Select Team" list="teams">
+                        <datalist id="teams">
+                            <option value="U 14">
+                            <option value="U 16">
+                            <option value="U 19">
+                        </datalist>
+
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                            <button class="select-button">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <h2>Players</h2>
+                        <input type="text" placeholder="Write a new player's name">
+                        
+                        <div class="button-group">
+                            <button class="delete-button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

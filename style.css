@@ -5,7 +5,7 @@ body {
     margin: 0;
     padding: 0;
     text-align: center;
-    background-image: url('programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
+    background-image: url('For_css/programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
     background-size: cover; /* Fait en sorte que l'image couvre toute la page */
     background-position: center; /* Centre l'image */
     background-repeat: no-repeat; /* Évite que l'image se répète */
@@ -14,13 +14,14 @@ body {
 
 
 h1 {
-    margin-top: 20px;
+    margin-top: 10px;
     color: #333;
 }
 
 p {
     color: #666;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
 }
 
 /* Style du menu horizontal */
@@ -31,8 +32,28 @@ p {
     padding: 0 20px;
 }
 
-.Title_add_elem {
+.menu-icon {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    padding: 0 20px;
+    padding-top: 100px;
+}
+.menu-icon-2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-top: 5px;
+}
+
+.Title_add_elem, .Title_delete_elem {
     margin-top: 120px;
+    text-decoration: underline;
+}
+
+.Title_add_elem-2, .Title_delete_elem-2 {
+    margin-top: 0px;
+    text-decoration: underline;
 }
 
 .dropdown, .column {
@@ -75,12 +96,23 @@ p {
     max-width: 30%; /* Assure que toutes les colonnes sont de la même largeur */
 }
 
+/* Style pour "Add a new element" */
+.delete-element {
+    margin-top: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 20px;
+}
+
+.delete-element .dropdown, .delete-element .column {
+    max-width: 30%; /* Assure que toutes les colonnes sont de la même largeur */
+}
+
 .class-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw; /* Largeur complète de l'écran */
-    height: 100vh; /* Hauteur complète de l'écran */
+    position: relative;
+    min-width: 100vw; /* Largeur complète de l'écran */
+    min-height: 100vh; /* Hauteur minimale de l'écran pour couvrir toute la page */
     border: 1px solid rgba(0, 0, 0, 0.5); /* Bordure semi-transparente */
     background-color: rgba(255, 255, 255, 0.4); /* Arrière-plan légèrement transparent */
     display: flex;
@@ -90,4 +122,76 @@ p {
     box-sizing: border-box; /* Inclut le padding dans la taille totale */
     font-family: Arial, sans-serif;
     color: #000000;
+}
+
+
+.border {
+    border: 6px solid  rgba(0, 0, 0, 0.5);
+    padding-bottom: 70px;
+}
+
+/* Style de la barre d'icônes */
+.icon-group {
+    display: flex;
+    gap: 100px; /* Espacement entre les icônes */
+    justify-content: center; /* Centre les icônes */
+    margin-top: 20px; /* Espace au-dessus du groupe d'icônes */
+}
+
+
+.icon {
+    width: 70px; /* Taille des icônes */
+    height: 70px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.icon:hover {
+    transform: scale(3.1); /* Agrandissement au survol */
+}
+
+
+/* Styles de base pour les boutons */
+.button-group {
+    display: flex;
+    gap: 10px; /* Espace entre les boutons */
+    margin-top: 10px;
+    justify-content: center; /* Centre les boutons sous chaque input */
+}
+
+.add-button, .select-button, .delete-button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Couleurs et styles pour chaque bouton */
+.add-button {
+    background-color: #28a745; /* Vert pour "Add" */
+    color: white;
+}
+
+.add-button:hover {
+    background-color: #218838;
+}
+
+.delete-button {
+    background-color: #db3e39; /* Vert pour "Add" */
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #eb0c0c;
+}
+
+.select-button {
+    background-color: #007bff; /* Bleu pour "Select" */
+    color: white;
+}
+
+.select-button:hover {
+    background-color: #0056b3;
 }

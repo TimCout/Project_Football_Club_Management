@@ -1,10 +1,17 @@
 /* Style de la page */
+/* Background image style */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     text-align: center;
+    background-image: url('programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
+    background-size: cover; /* Fait en sorte que l'image couvre toute la page */
+    background-position: center; /* Centre l'image */
+    background-repeat: no-repeat; /* Évite que l'image se répète */
+    background-attachment: fixed; /* Fixe l'image de fond pour qu'elle ne bouge pas au scroll */
 }
+
 
 h1 {
     margin-top: 20px;
@@ -24,10 +31,15 @@ p {
     padding: 0 20px;
 }
 
+.Title_add_elem {
+    margin-top: 120px;
+}
+
 .dropdown, .column {
     flex-grow: 1;
     text-align: center;
     position: relative;
+    max-width: 30%; /* Colonne avec une largeur uniforme */
 }
 
 .dropdown h2, .column h2 {
@@ -35,7 +47,7 @@ p {
     cursor: pointer;
 }
 
-.dropdown input {
+.dropdown input, .column input {
     margin-top: 10px;
     padding: 8px;
     width: 80%;
@@ -45,32 +57,20 @@ p {
 }
 
 /* Style pour l'input en mode focus */
-.dropdown input:focus {
+.dropdown input:focus, .column input:focus {
     outline: none;
     border-color: #007bff;
 }
 
-/* Style du contenu du menu déroulant */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    text-align: left;
+/* Style pour "Add a new element" */
+.add-element {
+    margin-top: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 20px;
 }
 
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover {
-    background-color: #f1f1f1;
+.add-element .dropdown, .add-element .column {
+    max-width: 30%; /* Assure que toutes les colonnes sont de la même largeur */
 }

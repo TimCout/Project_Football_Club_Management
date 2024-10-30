@@ -76,12 +76,18 @@ p {
 }
 
 .class-box {
-    border: px solid rgba(0, 0, 0, 0.5); /* Bordure semi-transparente */
-    background-color: rgba(255, 255, 255, 0.384); /* Arrière-plan transparent */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw; /* Largeur complète de l'écran */
+    height: 100vh; /* Hauteur complète de l'écran */
+    border: 1px solid rgba(0, 0, 0, 0.5); /* Bordure semi-transparente */
+    background-color: rgba(255, 255, 255, 0.4); /* Arrière-plan légèrement transparent */
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
     padding: 20px;
-    border-radius: 8px; /* Bords arrondis */
-    /* width: 300px; Largeur de l'encadré */
-    text-align: center;
+    box-sizing: border-box; /* Inclut le padding dans la taille totale */
     font-family: Arial, sans-serif;
-    color: #000000; /* Couleur du texte */
+    color: #000000;
 }

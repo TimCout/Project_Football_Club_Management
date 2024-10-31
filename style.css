@@ -77,6 +77,12 @@ p {
     cursor: pointer;
 }
 
+.dropdown h3, .column h3 {
+    margin: 10;
+    line-height: 4em;
+    cursor: pointer;
+}
+
 .dropdown input, .column input {
     margin-top: 10px;
     padding: 8px;
@@ -256,4 +262,25 @@ p {
 
 .single-button-delete .delete-button:hover {
     background-color: #cc1414;
+}
+
+.single-button-modify {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px; /* Espacement au-dessus du bouton */
+}
+
+.single-button-modify .modify-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #1266d3; /* Vert pour "Add" */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.single-button-modify .modify-button:hover {
+    background-color: #1430cc;
 }

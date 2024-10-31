@@ -12,6 +12,9 @@ teams_collection = db["teams"]
 
 def add_club(club_data):
     try:
+        existing_club = clubs_collection.find_one({"name": club_data["name"]})
+        if existing_club:
+            return {"message": "Club already exists", "club_id": str(existing_club["_id"])}
         club_id = clubs_collection.insert_one(club_data).inserted_id
         return {"message": "Club added successfully", "club_id": str(club_id)}
     
@@ -21,9 +24,15 @@ def add_club(club_data):
 def add_team_to_club(club_id, team_data):
     try:
         club = clubs_collection.find_one({"_id": ObjectId(club_id)})
-        
         if not club:
             return {"error": "Club not found."}
+        
+        existing_team = teams_collection.find_one({
+            "name": team_data["name"],
+            "club_id": ObjectId(club_id)
+        })
+        if existing_team:
+            return {"message": "Team already exists in this club", "team_id": str(existing_team["_id"])}
         
         team_data["club_id"] = ObjectId(club_id)
         team_data["players"] = []
@@ -45,6 +54,12 @@ def add_player_to_team(club_id, team_id, player_data):
         
         if not team:
             return {"error": "Team not found in the specified club."}
+        
+        existing_player = players_collection.find_one({
+            "name": player_data["name"]
+        })
+        if existing_player:
+            return {"error": "Player with this name already exists. Please choose a different name."}
         
         player_data["club_id"] = ObjectId(club_id)
         player_data["team_id"] = ObjectId(team_id)
@@ -70,10 +85,10 @@ club_data = {"name": "PSG"}
 response_club = add_club(club_data)
 print(response_club)
 
-team_data = {"name": "U23"}
-response_team = add_team_to_club(response_club.get("club_id"), team_data)
+team_data = {"name": "U24"}
+response_team = add_team_to_club('67236edf60321d016e50017f', team_data)
 print(response_team)
 
-player_data = {"name": "Xavi"}
-response_player = add_player_to_team(response_club.get("club_id"), response_team.get("team_id"), player_data)
+player_data = {"name": "Pedri"}
+response_player = add_player_to_team('67236edf60321d016e50017f', response_team.get("team_id"), player_data)
 print(response_player)

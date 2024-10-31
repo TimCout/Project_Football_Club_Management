@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Manager - Add a new element</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Club Manager - Delete an element</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 
 
@@ -18,12 +18,11 @@
                 </a>
             </div>
         </div>
-        
 
         <div class="border">
-            <h1 class="Title_add_elem-2">Add a new element</h1>
+            <h1 class="Title_delete_elem-2">Delete an element</h1>
             <div class="menu">
-                <div class="add-element">
+                <div class="delete-element">
                     <div class="dropdown">
                         <h2>Club</h2>
                         <input type="text" placeholder="Club's name" list="clubs">
@@ -50,8 +49,8 @@
                     </div>
                 </div>
             </div>
-            <div class="single-button">
-                <button class="add-button">Add</button>
+            <div class="single-button-delete">
+                <button class="delete-button">Delete</button>
             </div>
             </div>
         </div>

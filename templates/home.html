@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Manager</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        async function loadClubs() {
+            try {
+                const response = await fetch('/api/clubs');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const clubs = await response.json();
+
+                const clubsList = document.getElementById('clubs');
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.id;
+                    option.textContent = club.name;
+                    clubsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+            }
+        }
+
+        async function loadTeams(clubId) {
+            try {
+                const response = await fetch(`/api/teams/${clubId}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const teams = await response.json();
+                
+                const teamsList = document.getElementById('teams');
+                teamsList.innerHTML = "";
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = team.name;
+                    teamsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        }
+
+        async function onClubOkClick() {
+            const selectedClubId = document.getElementById('clubs').value;
+            if (selectedClubId) {
+                await loadTeams(selectedClubId);
+            } else {
+                console.warn('No club selected.');
+            }
+        }
+
+        async function loadPlayers(teamId) {
+            try {
+                const response = await fetch(`/api/players/${teamId}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const players = await response.json();
+                
+                // Clear existing player options
+                const playersList = document.getElementById('players');
+                playersList.innerHTML = "";
+                players.forEach(player => {
+                    const li = document.createElement('li');
+                    li.textContent = `${player.name}`;
+                    playersList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error loading players:', error);
+            }
+        }
+
+        async function onTeamOkClick() {
+            const selectedTeamId = document.getElementById('teams').value;
+            if (selectedTeamId) {
+                await loadPlayers(selectedTeamId);
+            } else {
+                console.warn('No team selected.');
+            }
+        }
+
+        window.onload = () => {
+            loadClubs();
+        };
+    </script>
+</head>
+<body>
+    <div class="class-box">
+        <h1>Football Club Manager</h1>
+        <p>Welcome to the best site to manage your football club.</p>
+
+        <div class="border">
+            <div class="menu">
+                <div class="dropdown">
+                    <h2>Club</h2>
+                    <select id="clubs">
+                        <option value="">Select Club</option>
+                    </select>
+                    <button onclick="onClubOkClick()">OK</button>
+                </div>
+
+                <div class="dropdown">
+                    <h2>Team</h2>
+                    <select id="teams">
+                        <option value="">Select Team</option>
+                    </select>
+                    <button onclick="onTeamOkClick()">OK</button>
+                </div>
+
+                <div class="column">
+                    <h2>Players</h2>
+                    <ul id="players">
+                    </ul>
+                </div>
+            </div>
+
+            <div class="menu-icon">
+                <div class="icon-group">
+                    <a href="add-element.html" class="icon-link" title="Add Element">
+                        <img src="{{ url_for('static', filename='images/plus-icon.png') }}" alt="Add" class="icon">
+                    </a>
+                    <a href="delete-element.html" class="icon-link" title="Delete Element">
+                        <img src="{{ url_for('static', filename='images/delete-icon.png') }}" alt="Delete" class="icon">
+                    </a>
+                    <a href="modify-element.html" class="icon-link" title="Modify Element">
+                        <img src="{{ url_for('static', filename='images/edit-icon.png') }}" alt="Modify" class="icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

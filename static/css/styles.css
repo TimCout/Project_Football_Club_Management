@@ -5,7 +5,7 @@ body {
     margin: 0;
     padding: 0;
     text-align: center;
-    background-image: url('For_css/programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
+    background-image: url('../images/programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
     background-size: cover; /* Fait en sorte que l'image couvre toute la page */
     background-position: center; /* Centre l'image */
     background-repeat: no-repeat; /* Évite que l'image se répète */

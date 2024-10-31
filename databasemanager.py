@@ -46,6 +46,9 @@ def add_player_to_team(club_id, team_id, player_data):
         if not team:
             return {"error": "Team not found in the specified club."}
         
+        player_data["club_id"] = ObjectId(club_id)
+        player_data["team_id"] = ObjectId(team_id)
+        
         player_id = players_collection.insert_one(player_data).inserted_id
         
         teams_collection.update_one(
@@ -63,17 +66,14 @@ def add_player_to_team(club_id, team_id, player_data):
     except Exception as e:
         return {"error": str(e)}
 
-player_data = {
-    "name": "Cristiano Ronaldo"
-}
-club_data = {"name": "Real madrid"}
+club_data = {"name": "PSG"}
 response_club = add_club(club_data)
 print(response_club)
 
-team_data = {"name": "U22"}
+team_data = {"name": "U23"}
 response_team = add_team_to_club(response_club.get("club_id"), team_data)
 print(response_team)
 
-player_data = {"name": "Iniesta"}
+player_data = {"name": "Xavi"}
 response_player = add_player_to_team(response_club.get("club_id"), response_team.get("team_id"), player_data)
 print(response_player)

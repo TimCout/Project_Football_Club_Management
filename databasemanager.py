@@ -23,6 +23,8 @@ def add_club(club_data):
     except Exception as e:
         return {"error": str(e)}
     
+
+    
 def add_team_to_club(club_id, team_data):
     try:
         club = clubs_collection.find_one({"_id": ObjectId(club_id)})
@@ -109,6 +111,8 @@ def delete_club_by_name(club_name):
     except Exception as e:
         return {"error": str(e)}
 
+
+
 # Fonction pour supprimer une équipe par son nom
 def delete_team_by_name(club_name, team_name):
     try:
@@ -175,7 +179,13 @@ def delete_player_by_name(club_name, team_name, player_name):
 
 # Exemple d'utilisation
 # Ajout d'un club, d'une équipe et d'un joueur
+
 """
+player_data = {"name": "JOE2"}
+response_player = add_player_to_team("67238439a6ec575aef346319", "67238439a6ec575aef34631a", player_data)
+print(response_player)
+
+
 club_data = {"name": "ZOUM"}
 response_club = add_club(club_data)
 print(response_club)
@@ -184,10 +194,34 @@ team_data = {"name": "U79"}
 response_team = add_team_to_club(response_club.get("club_id"), team_data)
 print(response_team)
 
+team_data = {"name": "U80"}
+response_team_1 = add_team_to_club(response_club.get("club_id"), team_data)
+print(response_team_1)
+
 player_data = {"name": "JOE"}
 response_player = add_player_to_team(response_club.get("club_id"), response_team.get("team_id"), player_data)
 print(response_player)
 
+player_data = {"name": "NATHAN"}
+response_player = add_player_to_team(response_club.get("club_id"), response_team_1.get("team_id"), player_data)
+print(response_player)
+
+club_data = {"name": "PSG"}
+response_club_1 = add_club(club_data)
+print(response_club_1)
+
+team_data = {"name": "U20"}
+response_team_2 = add_team_to_club(response_club_1.get("club_id"), team_data)
+print(response_team_2)
+
+team_data = {"name": "U21"}
+response_team_3 = add_team_to_club(response_club_1.get("club_id"), team_data)
+print(response_team_3)
+
+
+player_data = {"name": "LIONNEL"}
+response_player = add_player_to_team(response_club_1.get("club_id"), response_team_2.get("team_id"), player_data)
+print(response_player)
 
 
 response_delete_club = delete_club_by_name("ZOUM")
@@ -240,19 +274,11 @@ def update_mongo_player_name(name,new_name):
     else:
         print(f"Aucun joueur trouvé avec l'id {player_id}.")
 
-#update_mongo_player_name("Pedri", "Lionel")
+#update_mongo_player_name("P", "Lionel")
 
 
 #supprimer un joueur d'une team
 def remove_player_from_team(club_id, team_id, player_name):
-    """
-    Supprime un joueur d'une équipe et met à jour l'équipe dans MongoDB.
-    
-    :param club_id: ID du club
-    :param team_id: ID de l'équipe
-    :param player_name: Nom du joueur à supprimer
-    :return: Message indiquant si la suppression a réussi ou échoué
-    """
     try:
         # Rechercher l'équipe pour s'assurer qu'elle appartient au club spécifié
         team = teams_collection.find_one({"_id": ObjectId(team_id), "club_id": ObjectId(club_id)})
@@ -266,8 +292,6 @@ def remove_player_from_team(club_id, team_id, player_name):
         if not player:
             return {"error": "Player not found in the specified team."}
         
-        # Supprimer le joueur de la collection players
-        players_collection.delete_one({"_id": player["_id"]})
 
         # Mettre à jour la collection teams en retirant le joueur de la liste des joueurs de l'équipe
         teams_collection.update_one(
@@ -275,15 +299,39 @@ def remove_player_from_team(club_id, team_id, player_name):
             {"$pull": {"players": player["_id"]}}
         )
 
-        # Supprimer le joueur du cache Redis
-        redis_client.delete(f"player:{player['_id']}")
         
         return {"message": f"Player '{player_name}' removed successfully from team '{team['name']}'."}
     
     except Exception as e:
         return {"error": str(e)}
 
-
+def add_player_to_team_update(club_id, team_id, player_data):
+    try:
+        team = teams_collection.find_one({"_id": ObjectId(team_id), "club_id": ObjectId(club_id)})
+        
+        if not team:
+            return {"error": "Team not found in the specified club."}
+        
+    
+        player_data["club_id"] = ObjectId(club_id)
+        player_data["team_id"] = ObjectId(team_id)
+        
+        player_id = players_collection.insert_one(player_data).inserted_id
+        
+        teams_collection.update_one(
+            {"_id": ObjectId(team_id)},
+            {"$push": {"players": player_id}}
+        )
+        
+        player_data_str = {k: str(v) if isinstance(v, ObjectId) else v for k, v in player_data.items()}
+        player_data_str["_id"] = str(player_id)
+        
+        redis_client.hset(f"player:{player_id}", mapping=player_data_str)
+        
+        return {"message": "Player added successfully", "player_id": str(player_id)}
+    
+    except Exception as e:
+        return {"error": str(e)}
 #modifier la team d'un joueur
 def update_mongo_player_team(name, team ,club, new_club, new_team):
 
@@ -292,12 +340,17 @@ def update_mongo_player_team(name, team ,club, new_club, new_team):
 
     player_id = get_player_id(name)
 
+    player_data = {"name": name}
+
+    
+
 
     new_club_id = get_club_id(new_club)
     club_id = get_club_id(club)
 
     remove_player_from_team(club_id, team_id, name)
-    add_player_to_team(new_club_id, new_team_id, {"name": name})
+    add_player_to_team_update(new_club_id, new_team_id, player_data)
+    
 
 
 
@@ -313,7 +366,10 @@ def update_mongo_player_team(name, team ,club, new_club, new_team):
     else:
         print(f"Aucun joueur trouvé avec l'id {player_id}.")
 
-#update_mongo_player_team("Pedri","U24", "PSG", "U20")
+    
+
+#update_mongo_player_team("LIONNEL","U21", "PSG", "PSG", "U20")
+
 
 #modifier le club et la team d'un joueur
 def update_mongo_player_club(name,team, club, new_team, new_club ):
@@ -335,7 +391,7 @@ def update_mongo_player_club(name,team, club, new_team, new_club ):
     else:
         print(f"Aucun joueur trouvé avec l'id {player_id}.")
 
-#update_mongo_player_club("Lionel","U2", "PS", "U20", "PSG" )
+#update_mongo_player_club("NATHAN","U80", "ZOUM", "U20", "PSG" )
 
 
 #modifier le nom d'une team

@@ -39,12 +39,21 @@ p {
     padding: 0 20px;
     padding-top: 100px;
 }
-.menu-icon-2 {
+.header-container {
+    position: relative;
     display: flex;
+    justify-content: center; /* Centre le titre */
     align-items: center;
-    justify-content: space-around;
-    padding-top: 5px;
+    padding: 20px;
 }
+
+.menu-icon-2 {
+    position: absolute;
+    right: 20px; /* Place l'icône à droite de l'écran */
+    top: 50%;
+    transform: translateY(-50%); /* Centre verticalement par rapport au conteneur */
+}
+
 
 .Title_add_elem, .Title_delete_elem {
     margin-top: 120px;
@@ -146,10 +155,19 @@ p {
     transition: transform 0.2s;
 }
 
+.icon-2 {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
 .icon:hover {
     transform: scale(3.1); /* Agrandissement au survol */
 }
-
+.icon-2:hover {
+    transform: scale(2.1); /* Agrandissement au survol */
+}
 
 /* Styles de base pour les boutons */
 .button-group {

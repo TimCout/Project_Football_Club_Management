@@ -2,6 +2,7 @@ from pymongo import MongoClient
 import redis
 from bson.objectid import ObjectId
 
+# Connexion à MongoDB et Redis
 mongo_client = MongoClient("mongodb://localhost:27017/")
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
@@ -15,6 +16,7 @@ def add_club(club_data):
         existing_club = clubs_collection.find_one({"name": club_data["name"]})
         if existing_club:
             return {"message": "Club already exists", "club_id": str(existing_club["_id"])}
+        
         club_id = clubs_collection.insert_one(club_data).inserted_id
         return {"message": "Club added successfully", "club_id": str(club_id)}
     
@@ -81,14 +83,115 @@ def add_player_to_team(club_id, team_id, player_data):
     except Exception as e:
         return {"error": str(e)}
 
-club_data = {"name": "PSG"}
+# Fonction pour supprimer un club par son nom
+def delete_club_by_name(club_name):
+    try:
+        club = clubs_collection.find_one({"name": club_name})
+        if not club:
+            return {"error": "Club not found."}
+
+        club_id = str(club["_id"])
+
+        # Supprimer les équipes et les joueurs associés
+        teams = teams_collection.find({"club_id": ObjectId(club_id)})
+        for team in teams:
+            team_id = str(team["_id"])
+            # Supprimer tous les joueurs de cette équipe
+            players_collection.delete_many({"team_id": ObjectId(team_id)})
+            redis_client.delete(f"team:{team_id}")  # Supprimer aussi du cache Redis
+
+        # Supprimer toutes les équipes du club
+        teams_collection.delete_many({"club_id": ObjectId(club_id)})
+        clubs_collection.delete_one({"_id": ObjectId(club_id)})
+        
+        return {"message": f"Club '{club_name}' and all associated teams and players deleted successfully."}
+    
+    except Exception as e:
+        return {"error": str(e)}
+
+# Fonction pour supprimer une équipe par son nom
+def delete_team_by_name(club_name, team_name):
+    try:
+        club = clubs_collection.find_one({"name": club_name})
+        if not club:
+            return {"error": "Club not found."}
+        
+        club_id = str(club["_id"])
+        team = teams_collection.find_one({"name": team_name, "club_id": ObjectId(club_id)})
+        if not team:
+            return {"error": "Team not found in the specified club."}
+
+        team_id = str(team["_id"])
+        
+        # Supprimer tous les joueurs de cette équipe
+        players_collection.delete_many({"team_id": ObjectId(team_id)})
+        redis_client.delete(f"team:{team_id}")  # Supprimer aussi du cache Redis
+        
+        # Supprimer l'équipe
+        teams_collection.delete_one({"_id": ObjectId(team_id)})
+        
+        # Retirer l'équipe de la collection des clubs
+        clubs_collection.update_one(
+            {"_id": ObjectId(club_id)},
+            {"$pull": {"teams": ObjectId(team_id)}}
+        )
+        
+        return {"message": f"Team '{team_name}' deleted successfully."}
+    
+    except Exception as e:
+        return {"error": str(e)}
+
+# Fonction pour supprimer un joueur par son nom
+def delete_player_by_name(club_name, team_name, player_name):
+    try:
+        club = clubs_collection.find_one({"name": club_name})
+        if not club:
+            return {"error": "Club not found."}
+        
+        club_id = str(club["_id"])
+        team = teams_collection.find_one({"name": team_name, "club_id": ObjectId(club_id)})
+        if not team:
+            return {"error": "Team not found in the specified club."}
+
+        team_id = str(team["_id"])
+        player = players_collection.find_one({"name": player_name, "team_id": ObjectId(team_id), "club_id": ObjectId(club_id)})
+        if not player:
+            return {"error": "Player not found in the specified team."}
+
+        # Supprimer le joueur
+        players_collection.delete_one({"_id": ObjectId(player["_id"])})
+        redis_client.delete(f"player:{player['_id']}")  # Supprimer aussi du cache Redis
+        
+        # Retirer le joueur de l'équipe
+        teams_collection.update_one(
+            {"_id": ObjectId(team_id)},
+            {"$pull": {"players": ObjectId(player["_id"])}}
+        )
+        
+        return {"message": f"Player '{player_name}' deleted successfully."}
+    
+    except Exception as e:
+        return {"error": str(e)}
+
+# Exemple d'utilisation
+# Ajout d'un club, d'une équipe et d'un joueur
+club_data = {"name": "ZOUM"}
 response_club = add_club(club_data)
 print(response_club)
 
-team_data = {"name": "U24"}
-response_team = add_team_to_club('67236edf60321d016e50017f', team_data)
+team_data = {"name": "U79"}
+response_team = add_team_to_club(response_club.get("club_id"), team_data)
 print(response_team)
 
-player_data = {"name": "Pedri"}
-response_player = add_player_to_team('67236edf60321d016e50017f', response_team.get("team_id"), player_data)
+player_data = {"name": "JOE"}
+response_player = add_player_to_team(response_club.get("club_id"), response_team.get("team_id"), player_data)
 print(response_player)
+
+
+
+response_delete_club = delete_club_by_name("ZOUM")
+print(response_delete_club)
+
+
+
+

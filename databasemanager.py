@@ -172,9 +172,83 @@ def delete_player_by_name(club_name, team_name, player_name):
     
     except Exception as e:
         return {"error": str(e)}
+    
+def get_club_with_teams_and_players(club_name):
+    try:
+        club = clubs_collection.find_one({"name": club_name})
+        if not club:
+            return {"error": "Club not found."}
+
+        club_data = {
+            "club_name": club["name"],
+            "teams": []
+        }
+
+        # Retrieve teams of the club
+        teams = teams_collection.find({"club_id": club["_id"]})
+        for team in teams:
+            team_data = {
+                "name": team["name"],
+                "players": []
+            }
+
+            # Retrieve players of the team
+            players = players_collection.find({"team_id": team["_id"]})
+            for player in players:
+                player_data = {
+                    "name": player["name"]
+                }
+                team_data["players"].append(player_data)
+
+            club_data["teams"].append(team_data)
+
+        return club_data
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def get_team_with_players(club_name, team_name):
+    try:
+        club = clubs_collection.find_one({"name": club_name})
+        if not club:
+            return {"error": "Club not found."}
+
+        team = teams_collection.find_one({"name": team_name, "club_id": club["_id"]})
+        if not team:
+            return {"error": "Team not found in the specified club."}
+
+        team_data = {
+            "team_name": team["name"],
+            "players": []
+        }
+
+        # Retrieve players of the team
+        players = players_collection.find({"team_id": team["_id"]})
+        for player in players:
+            player_data = {
+                "name": player["name"]
+            }
+            team_data["players"].append(player_data)
+
+        return team_data
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# Example usage
+# To get a club with its teams and players
+club_info = get_club_with_teams_and_players("ZOUM")
+print(club_info)
+
+# To get the details of a team
+team_info = get_team_with_players("ZOUM", "U79")
+print(team_info)
+
 
 # Exemple d'utilisation
-# Ajout d'un club, d'une équipe et d'un joueur
+
 club_data = {"name": "ZOUM"}
 response_club = add_club(club_data)
 print(response_club)
@@ -188,9 +262,6 @@ response_player = add_player_to_team(response_club.get("club_id"), response_team
 print(response_player)
 
 
-
-response_delete_club = delete_club_by_name("ZOUM")
-print(response_delete_club)
 
 
 

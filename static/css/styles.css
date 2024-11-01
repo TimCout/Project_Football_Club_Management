@@ -175,6 +175,18 @@ p {
     transform: scale(2.1); /* Agrandissement au survol */
 }
 
+.icon-item {
+    text-align: center;
+    margin: 0 10px;
+}
+
+.icon-item span {
+    display: block;
+    margin-top: 5px;
+    font-size: 20px; /* Taille du texte */
+    color: #333; /* Couleur du texte */
+}
+
 /* Styles de base pour les boutons */
 .button-group {
     display: flex;
@@ -283,4 +295,90 @@ p {
 
 .single-button-modify .modify-button:hover {
     background-color: #1430cc;
+}
+
+/* Style de la modale */
+#loginModal {
+    display: none; /* Masquer par défaut */
+    position: fixed; /* Position fixe */
+    left: 50%; /* Centrer horizontalement */
+    top: 50%; /* Centrer verticalement */
+    transform: translate(-50%, -50%); /* Ajuster pour centrer complètement */
+    z-index: 1000; /* Z-index élevé pour être au-dessus du contenu */
+    background-color: rgba(255, 255, 255, 0.9); /* Fond blanc légèrement transparent */
+    border-radius: 8px; /* Coins arrondis */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre pour un effet 3D */
+    padding: 20px; 
+    width: 500px; /* Largeur fixe ou ajustable selon vos besoins */
+    text-align: center;
+}
+
+/* Supprime le style de centrage dans .modal-content */
+.modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+label {
+    display: block;
+    margin: 8px 0 4px;
+}
+
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+/* Aligner "Login" et "Sign-up" */
+#loginSection button,
+#signUpSection button {
+    width: 100px;
+    margin: 5px auto;
+    display: block;
+}
+
+/* Style de "Sign-up" */
+#signUpButton {
+    color: white;
+    background-color: #1e75bd; /* Remplacez par la couleur de votre choix */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+#signUpButton:hover {
+    background-color: #104875; /* Une teinte plus foncée pour l'effet hover */
 }

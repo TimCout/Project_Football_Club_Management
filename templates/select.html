@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Manager</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="class-box">
+        <h1>Football Club Manager</h1>
+        <p>Welcome to the best site to manage your football club.</p>
+
+        <div class="menu-icon">
+            <div class="icon-group">
+                <div class="icon-item">
+                    <a href="home-admin.html" class="icon-link" title="ADMIN" data-role="admin">
+                        <img src="{{ url_for('static', filename='images/admin-icon.png') }}" alt="Admin" class="icon">
+                    </a>
+                    <span>ADMIN</span>
+                </div>
+                
+                <div class="icon-item">
+                    <a href="home-user.html" class="icon-link" title="USER" data-role="user">
+                        <img src="{{ url_for('static', filename='images/user-icon.png') }}" alt="User" class="icon">
+                    </a>
+                    <span>USER</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="loginModal" style="display: none;">
+            <div class="modal-content">
+                <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+                <h2 id="modalTitle">Connection</h2>
+        
+                <!-- Section pour le login -->
+                <div id="loginSection">
+                    <input type="text" id="username" placeholder="Username">
+                    <input type="password" id="password" placeholder="Password">
+                    <button onclick="submitLogin()">Login</button>
+                    <button id="signUpButton" onclick="openSignUp()" style="display: none;">Sign-up</button>
+                </div>
+        
+                <!-- Section pour le sign-up (affichée seulement pour "user") -->
+                <div id="signUpSection" style="display: none;">
+                    <input type="text" id="firstName" placeholder="First Name">
+                    <input type="text" id="lastName" placeholder="Last Name">
+                    <input type="text" id="email" placeholder="Email Address">
+                    <input type="text" id="signupUsername" placeholder="Username">
+                    <input type="password" id="signupPassword" placeholder="Password">
+                    <button id="signUpButton" onclick="submitSignUp()">Sign-up</button>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+</body>
+
+<script>
+    async function loadClubs() {
+        try {
+            const response = await fetch('/api/clubs');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const clubs = await response.json();
+
+            const clubsList = document.getElementById('clubs');
+            clubs.forEach(club => {
+                const option = document.createElement('option');
+                option.value = club.id;
+                option.textContent = club.name;
+                clubsList.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading clubs:', error);
+        }
+    }
+
+    async function loadTeams(clubId) {
+        try {
+            const response = await fetch(`/api/teams/${clubId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const teams = await response.json();
+            
+            const teamsList = document.getElementById('teams');
+            teamsList.innerHTML = "";
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.id;
+                option.textContent = team.name;
+                teamsList.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading teams:', error);
+        }
+    }
+
+    async function onClubOkClick() {
+        const selectedClubId = document.getElementById('clubs').value;
+        if (selectedClubId) {
+            await loadTeams(selectedClubId);
+        } else {
+            console.warn('No club selected.');
+        }
+    }
+
+    async function loadPlayers(teamId) {
+        try {
+            const response = await fetch(`/api/players/${teamId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const players = await response.json();
+            
+            // Clear existing player options
+            const playersList = document.getElementById('players');
+            playersList.innerHTML = "";
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = `${player.name}`;
+                playersList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error loading players:', error);
+        }
+    }
+
+    async function onTeamOkClick() {
+        const selectedTeamId = document.getElementById('teams').value;
+        if (selectedTeamId) {
+            await loadPlayers(selectedTeamId);
+        } else {
+            console.warn('No team selected.');
+        }
+    }
+
+    let selectedRole;
+
+    // Afficher la modale de connexion ou d'inscription
+    function openModal(role) {
+        selectedRole = role;
+        document.getElementById("loginModal").style.display = "block";
+        
+        // Modifier le titre et ajuster les boutons selon le rôle
+        if (role === "admin") {
+            document.getElementById("modalTitle").textContent = "Admin Login";
+            document.getElementById("signUpButton").style.display = "none";
+        } else if (role === "user") {
+            document.getElementById("modalTitle").textContent = "User Login";
+            document.getElementById("signUpButton").style.display = "block";
+        }
+
+        // Afficher la section login et cacher la section sign-up
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("signUpSection").style.display = "none";
+    }
+
+        function submitLogin() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (username && password) {
+            // Fermez la modal de login
+            closeModal();
+            
+            // Redirige vers la page enregistrée précédemment
+            window.location.href = selectedLink; // Redirection vers la page de rôle
+        } else {
+            alert("Veuillez remplir tous les champs.");
+        }
+    }
+
+    // Ouvrir la section d'inscription
+    function openSignUp() {
+        document.getElementById("modalTitle").textContent = "User Sign-up";
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("signUpSection").style.display = "block";
+    }
+
+    // Fonction pour fermer la modale
+    function closeModal() {
+        document.getElementById("loginModal").style.display = "none";
+    }
+
+    // Fonction pour soumettre l'inscription
+    function submitSignUp() {
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+        const email = document.getElementById("email").value;
+        const username = document.getElementById("signupUsername").value;
+        const password = document.getElementById("signupPassword").value;
+
+        if (firstName && lastName && email && username && password) {
+            closeModal();
+            alert("Registration complete. Please log in.");
+        } else {
+            alert("Please fill in all fields.");
+        }
+    }
+
+    let selectedLink; 
+    
+    // Attacher les événements aux liens d'icônes pour ouvrir la modale avec le rôle correspondant
+    document.querySelectorAll('.icon-link').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault(); // Empêche la redirection immédiate
+
+            const role = link.getAttribute("data-role");
+            selectedLink = link.href; // Stocke le lien cible
+            openModal(role); // Ouvre la modale avec le rôle
+        });
+    });
+
+
+    window.onload = () => {
+        loadClubs();
+    };
+</script>
+</html>

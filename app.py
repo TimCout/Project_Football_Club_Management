@@ -52,7 +52,15 @@ def get_players(team_id):
 
 @app.route('/')
 def index():
-    return render_template('home.html')
+    return render_template('select.html')
+
+@app.route('/home-admin.html')
+def admin():
+    return render_template('home-admin.html')
+
+@app.route('/home-user.html')
+def user():
+    return render_template('home-user.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

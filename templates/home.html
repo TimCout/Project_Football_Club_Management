@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Club Manager</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script>
+    <!-- <script>
         async function loadClubs() {
             try {
                 const response = await fetch('/api/clubs');
@@ -65,7 +65,7 @@
                 const players = await response.json();
                 
                 // Clear existing player options
-                const playersList = document.getElementById('players');
+                const playersList = document.getElementById('players34');
                 playersList.innerHTML = "";
                 players.forEach(player => {
                     const li = document.createElement('li');
@@ -89,8 +89,102 @@
         window.onload = () => {
             loadClubs();
         };
+    </script> -->
+
+    <script>
+        async function loadClubs(elementId) {
+            try {
+                const response = await fetch('/api/clubs');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const clubs = await response.json();
+    
+                const clubsList = document.getElementById(elementId);
+                clubsList.innerHTML = '';
+    
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.name; 
+                    option.textContent = club.name;
+                    clubsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+            }
+        }
+    
+        async function loadTeams(clubName, teamElementId) {
+            try {
+                const response = await fetch(`/api/teams/by-club-name/${clubName}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const teams = await response.json();
+    
+                const teamsList = document.getElementById(teamElementId);
+                teamsList.innerHTML = '';
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.name;
+                    option.textContent = team.name;
+                    teamsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        }
+    
+        async function loadPlayers(clubName, teamName, playerElementId) {
+            try {
+                const response = await fetch(`/api/players/by-club-team?club=${encodeURIComponent(clubName)}&team=${encodeURIComponent(teamName)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const players = await response.json();
+
+                const playersList = document.getElementById(playerElementId);
+                playersList.innerHTML = ''; // Vider la liste existante avant d'ajouter de nouveaux joueurs
+
+                if (players.length === 0) {
+                    const noPlayersItem = document.createElement('li');
+                    noPlayersItem.textContent = 'No players found';
+                    playersList.appendChild(noPlayersItem);
+                } else {
+                    players.forEach(player => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = player.name;
+                        playersList.appendChild(listItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading players:', error);
+            }
+        }
+
+    
+        document.addEventListener('DOMContentLoaded', () => {
+        loadClubs('tclubs');
+
+        document.getElementById('to-club').addEventListener('input', (event) => {
+            const selectedClubName = event.target.value;
+            if (selectedClubName) {
+                loadTeams(selectedClubName, 'tteams');
+            }
+        });
+
+        document.getElementById('to-team').addEventListener('input', (event) => {
+            const selectedClubName = document.getElementById('to-club').value;
+            const selectedTeamName = event.target.value;
+            if (selectedClubName && selectedTeamName) {
+                loadPlayers(selectedClubName, selectedTeamName, 'tplayers');
+            }
+        });
+    });
     </script>
+
 </head>
+
 <body>
     <div class="class-box">
         <h1>Football Club Manager</h1>
@@ -100,23 +194,21 @@
             <div class="menu">
                 <div class="dropdown">
                     <h2>Club</h2>
-                    <select id="clubs">
-                        <option value="">Select Club</option>
-                    </select>
-                    <button onclick="onClubOkClick()">OK</button>
+                    <input type="text" placeholder="Club's name" id="to-club" list="tclubs">
+                    <datalist id="tclubs">
+                    </datalist>
                 </div>
 
                 <div class="dropdown">
                     <h2>Team</h2>
-                    <select id="teams">
-                        <option value="">Select Team</option>
-                    </select>
-                    <button onclick="onTeamOkClick()">OK</button>
+                    <input type="text" placeholder="Team's name" id="to-team" list="tteams">
+                    <datalist id="tteams">
+                    </datalist>
                 </div>
 
                 <div class="column">
                     <h2>Players</h2>
-                    <ul id="players">
+                    <ul id="tplayers">
                     </ul>
                 </div>
             </div>

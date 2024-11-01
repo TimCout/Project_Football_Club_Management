@@ -374,6 +374,47 @@ def update_club_name():
         return jsonify({"message": f"Club '{club}' successfully renamed to '{new_name}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
+    
+
+@app.route('/api/delete', methods=['POST'])
+def delete_entity():
+    data = request.json
+    club_name = data.get('club')
+    team_name = data.get('team')
+    player_name = data.get('player')
+
+    club = clubs_collection.find_one({"name": club_name})
+    if not club:
+        return jsonify({"error": "Club not found"}), 404
+
+    club_id = club["_id"]
+
+    if club_name and not team_name and not player_name:
+        teams = teams_collection.find({"club_id": club_id})
+        team_ids = [team["_id"] for team in teams]
+        players_collection.delete_many({"team_id": {"$in": team_ids}})
+        teams_collection.delete_many({"club_id": club_id})
+        clubs_collection.delete_one({"_id": club_id})
+        return jsonify({"message": f"Club '{club_name}', all associated teams and players deleted successfully."})
+
+    team = teams_collection.find_one({"name": team_name, "club_id": club_id}) if team_name else None
+
+    if club_name and team_name and not player_name:
+        if not team:
+            return jsonify({"error": "Team not found in the specified club"}), 404
+        players_collection.delete_many({"team_id": team["_id"]})
+        teams_collection.delete_one({"_id": team["_id"]})
+        return jsonify({"message": f"Team '{team_name}' and all associated players deleted successfully."})
+
+    player = players_collection.find_one({"name": player_name, "team_id": team["_id"]}) if player_name and team else None
+
+    if club_name and team_name and player_name:
+        if not player:
+            return jsonify({"error": "Player not found in the specified team"}), 404
+        players_collection.delete_one({"_id": player["_id"]})
+        return jsonify({"message": f"Player '{player_name}' deleted successfully."})
+
+    return jsonify({"error": "Invalid parameters"}), 400    
 
 #manage pages
 @app.route('/')

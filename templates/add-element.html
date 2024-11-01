@@ -5,6 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Club Manager - Add a new element</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        async function loadClubs() {
+            try {
+                const response = await fetch('/api/clubs');
+                if (!response.ok) throw new Error('Failed to fetch clubs');
+                const clubs = await response.json();
+                
+                const clubsDatalist = document.getElementById('clubs');
+                clubsDatalist.innerHTML = '';  // Clear any previous options
+
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.name;
+                    option.dataset.id = club.id;  // Store the club ID in data attribute for easy access
+                    clubsDatalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+            }
+        }
+
+        async function loadTeams() {
+            const clubName = document.getElementById('clubInput').value;
+            const club = [...document.getElementById('clubs').options].find(opt => opt.value === clubName);
+            if (club && club.dataset.id) {
+                const clubId = club.dataset.id;
+                try {
+                    const response = await fetch(`/api/teams/${clubId}`);
+                    if (!response.ok) throw new Error('Failed to fetch teams');
+                    const teams = await response.json();
+                    
+                    const teamsDatalist = document.getElementById('teams');
+                    teamsDatalist.innerHTML = '';  // Clear previous team options
+
+                    teams.forEach(team => {
+                        const option = document.createElement('option');
+                        option.value = team.name;
+                        teamsDatalist.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading teams:', error);
+                }
+            } else {
+                console.log('No valid club selected or new club inputted');
+            }
+        }
+
+        async function addElement() {
+            const clubName = document.getElementById('clubInput').value;
+            const teamName = document.getElementById('teamInput').value;
+            const playerName = document.getElementById('playerInput').value;
+
+            // Prepare JSON data for POST request
+            const data = {
+                club: clubName,
+                team: teamName || null,
+                player: playerName || null
+            };
+
+            try {
+                // Send POST request to add element
+                const response = await fetch('/api/add-element', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                displayResult(result); // Call function to show the response
+
+            } catch (error) {
+                console.error('Error adding element:', error);
+            }
+        }
+
+        function displayResult(result) {
+            const resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = `
+                <p>Club: ${result.club}</p>
+                <p>Team: ${result.team || 'N/A'}</p>
+                <p>Player: ${result.player || 'N/A'}</p>
+            `;
+        }
+
+        window.onload = () => {
+            loadClubs();  // Load clubs on page load
+        };
+    </script>
 </head>
 
 <body>
@@ -12,7 +100,7 @@
         <div class="header-container">
             <h1>Football Club Manager</h1>
             <div class="menu-icon-2">
-                <a href="home.html" class="icon-link" title="Home">
+                <a href="/" class="icon-link" title="Home">
                     <img src="{{ url_for('static', filename='images/home-icon.png') }}" alt="Home" class="icon-2">
                 </a>
             </div>
@@ -24,33 +112,28 @@
                 <div class="add-element">
                     <div class="dropdown">
                         <h2>Club</h2>
-                        <input type="text" placeholder="Club's name" list="clubs">
-                        <datalist id="clubs">
-                            <option value="Real Madrid">
-                            <option value="Manchester City">
-                            <option value="Barcelona">
-                        </datalist>
+                        <input type="text" id="clubInput" placeholder="Club's name" list="clubs">
+                        <datalist id="clubs"></datalist>
+                        <button onclick="loadTeams()">OK</button>
                     </div>
             
                     <div class="dropdown">
                         <h2>Team</h2>
-                        <input type="text" placeholder="Team's name" list="teams">
-                        <datalist id="teams">
-                            <option value="U 14">
-                            <option value="U 16">
-                            <option value="U 19">
-                        </datalist>
+                        <input type="text" id="teamInput" placeholder="Team's name" list="teams">
+                        <datalist id="teams"></datalist>
+                        <button>OK</button>
                     </div>
             
                     <div class="dropdown">
                         <h2>Players</h2>
-                        <input type="text" placeholder="Player's name">
+                        <input type="text" id="playerInput" placeholder="Player's name">
                     </div>
                 </div>
             </div>
             <div class="single-button">
-                <button class="add-button">Add</button>
+                <button class="add-button" onclick="addElement()">Add</button>
             </div>
+            <div id="result" class="result"></div>
         </div>
     </div>
 </body>

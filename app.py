@@ -10,6 +10,7 @@ clubs_collection = db["clubs"]
 teams_collection = db["teams"]
 players_collection = db["players"]
 
+#home page
 @app.route('/api/clubs', methods=['GET'])
 def get_clubs():
     print("API endpoint '/api/clubs' was hit.")
@@ -17,8 +18,126 @@ def get_clubs():
     club_list = [{"id": str(club["_id"]), "name": club["name"]} for club in clubs]
     return jsonify(club_list)
 
+#add page
+def add_club(club_data):
+    existing_club = clubs_collection.find_one({"name": club_data["name"]})
+    if existing_club:
+        return {"message": "Club already exists", "club_id": str(existing_club["_id"])}
+    
+    club_id = clubs_collection.insert_one(club_data).inserted_id
+    return {"message": "Club added successfully", "club_id": str(club_id)}
 
-#récupérer les équipes d'un club
+def add_team_to_club(club_id, team_data):
+    existing_team = teams_collection.find_one({"name": team_data["name"], "club_id": ObjectId(club_id)})
+    if existing_team:
+        return {"message": "Team already exists in this club", "team_id": str(existing_team["_id"])}
+    
+    team_data["club_id"] = ObjectId(club_id)
+    team_data["players"] = []
+    team_id = teams_collection.insert_one(team_data).inserted_id
+    clubs_collection.update_one({"_id": ObjectId(club_id)}, {"$push": {"teams": team_id}})
+    
+    return {"message": "Team added successfully", "team_id": str(team_id)}
+
+def add_player_to_team(club_id, team_id, player_data):
+    existing_player = players_collection.find_one({"name": player_data["name"], "team_id": ObjectId(team_id)})
+    if existing_player:
+        return {"message": "Player with this name already exists in the team", "player_id": str(existing_player["_id"])}
+    
+    player_data["club_id"] = ObjectId(club_id)
+    player_data["team_id"] = ObjectId(team_id)
+    player_id = players_collection.insert_one(player_data).inserted_id
+    teams_collection.update_one({"_id": ObjectId(team_id)}, {"$push": {"players": player_id}})
+    
+    return {"message": "Player added successfully", "player_id": str(player_id)}
+
+# New endpoint for adding elements
+@app.route('/api/add-element', methods=['POST'])
+def add_element():
+    data = request.json
+    club_name = data.get("club")
+    team_name = data.get("team")
+    player_name = data.get("player")
+
+    # Initialize response message
+    response = {}
+
+    # Step 1: Handle Club
+    if not club_name:
+        response["club"] = "Cannot add a team or player without specifying a club."
+        return jsonify(response)
+    club = clubs_collection.find_one({"name": club_name})
+    if club:
+        club_id = str(club["_id"])
+        response["club"] = "Club already exists"
+    else:
+        result = add_club({"name": club_name, "teams": []})
+        club_id = result["club_id"]
+        response["club"] = result["message"]
+
+    # Step 2: Handle Team
+    if team_name:
+        team = teams_collection.find_one({"name": team_name, "club_id": ObjectId(club_id)})
+        if team:
+            team_id = str(team["_id"])
+            response["team"] = "Team already exists in this club"
+        else:
+            result = add_team_to_club(club_id, {"name": team_name})
+            team_id = result["team_id"]
+            response["team"] = result["message"]
+    elif player_name:
+        response["team"] = "Cannot add a player without specifying a team."
+        return jsonify(response)
+    else:
+        team_id = None
+
+    # Step 3: Handle Player
+    if player_name and team_id:
+        result = add_player_to_team(club_id, team_id, {"name": player_name})
+        response["player"] = result["message"]
+    elif player_name and not team_id:
+        response["player"] = "Cannot add player without specifying a team"
+    else:
+        response["player"] = "No player specified"
+
+    return jsonify(response)
+
+@app.route('/api/teams/<club_id>', methods=['GET'])
+def get_teams(club_id):
+    print(f"API endpoint '/api/teams/{club_id}' was hit.")
+    club = db['clubs'].find_one({"_id": ObjectId(club_id)})
+    if not club:
+        print(f"No club found with ID: {club_id}")
+        return jsonify({"error": "Club not found"}), 404
+    team_ids = club.get("teams", [])
+    if not team_ids:
+        print(f"No teams found for club ID: {club_id}")
+        return jsonify([]), 200  # Return empty list if no teams found
+    teams = db['teams'].find({"_id": {"$in": team_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
+    team_list = []
+    for team in teams:
+        if '_id' in team and 'name' in team:
+            team_list.append({"id": str(team["_id"]), "name": team["name"]})
+
+    return jsonify(team_list)
+
+@app.route('/api/players/<team_id>', methods=['GET'])
+def get_players(team_id):
+    print(f"API endpoint '/api/players/{team_id}' was hit.")
+    team = teams_collection.find_one({"_id": ObjectId(team_id)})
+    if not team:
+        print(f"No team found with ID: {team_id}")
+        return jsonify({"error": "Team not found"}), 404
+    player_ids = team.get("players", [])
+    if not player_ids:
+        print(f"No players found for team ID: {team_id}")
+        return jsonify([]), 200  # Return empty list if no players found
+    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
+    player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
+    return jsonify(player_list)
+
+
+#modify page
 @app.route('/api/teams/by-club-name/<club_name>', methods=['GET'])
 def get_teams_by_club_name(club_name):
     # Recherche du club par nom
@@ -58,43 +177,6 @@ def get_players_by_club_and_team():
     players = players_collection.find({"team_id": team["_id"], "club_id": club["_id"]}, {"_id": 1, "name": 1})
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
     return jsonify(player_list)
-
-@app.route('/api/teams/<club_id>', methods=['GET'])
-def get_teams(club_id):
-    print(f"API endpoint '/api/teams/{club_id}' was hit.")
-    club = db['clubs'].find_one({"_id": ObjectId(club_id)})
-    if not club:
-        print(f"No club found with ID: {club_id}")
-        return jsonify({"error": "Club not found"}), 404
-    team_ids = club.get("teams", [])
-    if not team_ids:
-        print(f"No teams found for club ID: {club_id}")
-        return jsonify([]), 200  # Return empty list if no teams found
-    teams = db['teams'].find({"_id": {"$in": team_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
-    team_list = []
-    for team in teams:
-        if '_id' in team and 'name' in team:
-            team_list.append({"id": str(team["_id"]), "name": team["name"]})
-
-    return jsonify(team_list)
-
-
-@app.route('/api/players/<team_id>', methods=['GET'])
-def get_players(team_id):
-    print(f"API endpoint '/api/players/{team_id}' was hit.")
-    team = teams_collection.find_one({"_id": ObjectId(team_id)})
-    if not team:
-        print(f"No team found with ID: {team_id}")
-        return jsonify({"error": "Team not found"}), 404
-    player_ids = team.get("players", [])
-    if not player_ids:
-        print(f"No players found for team ID: {team_id}")
-        return jsonify([]), 200  # Return empty list if no players found
-    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
-    player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
-    return jsonify(player_list)
-
-
 
 #récupère l'id du joueur en fonction de son nom, team et club
 def get_player_id(name):
@@ -293,10 +375,18 @@ def update_club_name():
     else:
         return jsonify({"error": "Update failed"}), 500
 
-
+#manage pages
 @app.route('/')
 def index():
     return render_template('home.html')
+
+@app.route('/add-element.html')
+def add():
+    return render_template('add-element.html')
+
+@app.route('/delete-element.html')
+def delete():
+    return render_template('delete-element.html')
 
 @app.route('/modify-element.html')
 def modifier():

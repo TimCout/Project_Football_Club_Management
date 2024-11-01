@@ -5,8 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Club Manager - Modify an element</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <script>
+        async function loadClubs(elementId) {
+            try {
+                const response = await fetch('/api/clubs');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const clubs = await response.json();
+    
+                const clubsList = document.getElementById(elementId);
+                clubsList.innerHTML = '';
+    
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.name; 
+                    option.textContent = club.name;
+                    clubsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+            }
+        }
+    
+        async function loadTeams(clubName, teamElementId) {
+            try {
+                const response = await fetch(`/api/teams/by-club-name/${clubName}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const teams = await response.json();
+    
+                const teamsList = document.getElementById(teamElementId);
+                teamsList.innerHTML = '';
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.name;
+                    option.textContent = team.name;
+                    teamsList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        }
+    
+        async function loadPlayers(clubName, teamName, playerElementId) {
+            try {
+                const response = await fetch(`/api/players/by-club-team?club=${encodeURIComponent(clubName)}&team=${encodeURIComponent(teamName)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const players = await response.json();
+    
+                const playersList = document.getElementById(playerElementId);
+                playersList.innerHTML = '';
+                players.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.name;
+                    option.textContent = player.name;
+                    playersList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading players:', error);
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClubs('fclubs');
+            loadClubs('tclubs');
+    
+            document.getElementById('from-club').addEventListener('change', (event) => {
+                const selectedClubName = event.target.value;
+                if (selectedClubName) {
+                    loadTeams(selectedClubName, "fteams");
+                }
+            });
+    
+            document.getElementById('from-team').addEventListener('change', (event) => {
+                const selectedClubName = document.getElementById('from-club').value;
+                const selectedTeamName = event.target.value;
+                if (selectedClubName && selectedTeamName) {
+                    loadPlayers(selectedClubName, selectedTeamName, "fplayers");
+                }
+            });
+    
+            document.getElementById('to-club').addEventListener('change', (event) => {
+                const selectedClubName = event.target.value;
+                if (selectedClubName) {
+                    loadTeams(selectedClubName, "tteams");
+                }
+            });
+    
+            document.getElementById('to-team').addEventListener('change', (event) => {
+                const selectedClubName = document.getElementById('to-club').value;
+                const selectedTeamName = event.target.value;
+                if (selectedClubName && selectedTeamName) {
+                    loadPlayers(selectedClubName, selectedTeamName, "tplayers");
+                }
+            });
+        });
+    </script>
+    
+    
+    
 </head>
-
 
 <body>
     <div class="class-box">
@@ -19,7 +122,6 @@
             </div>
         </div>
         
-
         <div class="border">
             <h1 class="Title_add_elem-2">Modify an element</h1>
             <div class="menu">
@@ -30,27 +132,22 @@
 
                     <div class="dropdown">
                         <h2>Club</h2>
-                        <input type="text" placeholder="Club's name" list="clubs">
-                        <datalist id="clubs">
-                            <option value="Real Madrid">
-                            <option value="Manchester City">
-                            <option value="Barcelona">
+                        <input type="text" placeholder="Club's name" id="from-club" list="fclubs">
+                        <datalist id="fclubs">
                         </datalist>
                     </div>
-            
+
                     <div class="dropdown">
                         <h2>Team</h2>
-                        <input type="text" placeholder="Team's name" list="teams">
-                        <datalist id="teams">
-                            <option value="U 14">
-                            <option value="U 16">
-                            <option value="U 19">
+                        <input type="text" placeholder="Team's name" id="from-team" list="fteams">
+                        <datalist id="fteams">
                         </datalist>
                     </div>
             
                     <div class="dropdown">
-                        <h2>Players</h2>
-                        <input type="text" placeholder="Player's name">
+                        <h2>Player</h2>
+                        <input type="text" placeholder="Player's name" id="from-player" list="fplayers">
+                        <datalist id="fplayers"></datalist>
                     </div>
                 </div>
             </div>
@@ -63,37 +160,94 @@
 
                     <div class="dropdown">
                         <h2>Club</h2>
-                        <input type="text" placeholder="Club's name" list="clubs">
-                        <datalist id="clubs">
-                            <option value="Real Madrid">
-                            <option value="Manchester City">
-                            <option value="Barcelona">
+                        <input type="text" placeholder="Club's name" id="to-club" list="tclubs">
+                        <datalist id="tclubs">
+                            
                         </datalist>
                     </div>
             
                     <div class="dropdown">
                         <h2>Team</h2>
-                        <input type="text" placeholder="Team's name" list="teams">
-                        <datalist id="teams">
-                            <option value="U 14">
-                            <option value="U 16">
-                            <option value="U 19">
+                        <input type="text" placeholder="Team's name" id="to-team" list="tteams">
+                        <datalist id="tteams">
+                            
                         </datalist>
                     </div>
             
                     <div class="dropdown">
-                        <h2>Players</h2>
-                        <input type="text" placeholder="Player's name">
+                        <h2>Player</h2>
+                        <input type="text" placeholder="Player's name" id="to-player" list="tplayers">
+                        <datalist id="tplayers"></datalist>
                     </div>
                 </div>
             </div>
 
-
             <div class="single-button-modify">
-                <button class="modify-button">Modify</button>
-            </div>
+                <button class="modify-button" onclick="modifyPlayer()">Modify</button>
             </div>
         </div>
     </div>
+
+    <script>
+    
+        async function modifyPlayer() {
+            const oldName = document.getElementById('from-player').value;
+            const newName = document.getElementById('to-player').value;
+            const fromClub = document.getElementById('from-club').value;
+            const toClub = document.getElementById('to-club').value;
+            const fromTeam = document.getElementById('from-team').value;
+            const toTeam = document.getElementById('to-team').value;
+
+            const data = {
+                name: oldName,
+                new_name: newName,
+                from_club: fromClub,
+                to_club: toClub,
+                from_team: fromTeam,
+                to_team: toTeam
+            };
+
+            if (!oldName && fromTeam) {
+                await sendRequest('/update_team_name', data);
+                return;  // Arrête l'exécution ici si cette condition est remplie
+            }
+
+            if (!oldName && !fromTeam && fromClub) {
+                await sendRequest('/update_club_name', data);
+                return;  // Arrête l'exécution ici si cette condition est remplie
+            }
+
+            // Vérifiez et envoyez chaque requête conditionnelle
+            if (oldName && newName && oldName !== newName) {
+                await sendRequest('/update_player_name', data);
+            }
+            
+            if (fromClub && toClub && fromClub !== toClub) {
+                await sendRequest('/update_player_club', data);
+            }
+            
+            if (fromTeam && toTeam && fromTeam !== toTeam) {
+                await sendRequest('/update_player_team', data);
+            }
+        }
+
+        // Fonction pour envoyer les requêtes avec fetch
+        async function sendRequest(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                alert(result.message || result.error);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("An error occurred while processing the request.");
+            }
+        }
+    </script>
 </body>
 </html>

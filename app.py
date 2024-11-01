@@ -438,8 +438,12 @@ def delete():
     return render_template('delete-element.html')
 
 @app.route('/modify-element.html')
-def modifier():
+def modify():
     return render_template('modify-element.html')
+
+@app.route('/list-user.html')
+def list():
+    return render_template('list-user.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

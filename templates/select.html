@@ -176,41 +176,79 @@
     //     }
     // }
 
-        // Function to submit the login request to the API
+        // // Function to submit the login request to the API
+        // async function submitLogin() {
+        //     const username = document.getElementById("username").value;
+        //     const password = document.getElementById("password").value;
+
+        //     if (username && password) {
+        //         try {
+        //             const response = await fetch('/api/login', {
+        //                 method: 'POST',
+        //                 headers: { 'Content-Type': 'application/json' },
+        //                 body: JSON.stringify({ username, password })
+        //             });
+
+        //             const data = await response.json();
+
+        //             if (response.ok) {
+        //                 // Vérifie le rôle de l'utilisateur
+        //                 if (data.role === 'admin') {
+        //                     window.location.href = '/home-admin.html'; // Redirige vers la page admin
+        //                 } else if (data.role === 'user') {
+        //                     window.location.href = '/home-user.html'; // Redirige vers la page utilisateur
+        //                 } else {
+        //                     alert("Role inconnu.Veuillez vous inscrire d'abord !"); // Gère les autres rôles si nécessaire
+        //                 }
+        //             } else {
+        //                 alert(data.error); // Affiche l'erreur de connexion
+        //             }
+        //         } catch (error) {
+        //             console.error('Error during login:', error);
+        //             alert("Failed to connect. Please try again later.");
+        //         }
+        //     } else {
+        //         alert("Please fill in all fields.");
+        //     }
+        // }
+
         async function submitLogin() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            if (username && password) {
-                try {
-                    const response = await fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    });
+        if (username && password) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-                    const data = await response.json();
+                const data = await response.json();
 
-                    if (response.ok) {
-                        // Vérifie le rôle de l'utilisateur
+                if (response.ok) {
+                    // Vérifie le rôle de l'utilisateur
+                    if (data.role === selectedRole) { // Vérifie si le rôle correspond à celui de l'icône
                         if (data.role === 'admin') {
                             window.location.href = '/home-admin.html'; // Redirige vers la page admin
                         } else if (data.role === 'user') {
                             window.location.href = '/home-user.html'; // Redirige vers la page utilisateur
-                        } else {
-                            alert("Role inconnu.Veuillez vous inscrire d'abord !"); // Gère les autres rôles si nécessaire
                         }
                     } else {
-                        alert(data.error); // Affiche l'erreur de connexion
+                        alert("You are not in the right place to log in. Please check the selected icon."); // Message d'erreur
                     }
-                } catch (error) {
-                    console.error('Error during login:', error);
-                    alert("Failed to connect. Please try again later.");
+                } else {
+                    alert(data.error); // Affiche l'erreur de connexion
                 }
-            } else {
-                alert("Please fill in all fields.");
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert("Connection failed. Please try again later.");
             }
+        } else {
+            alert("Please fill in all fields.");
         }
+    }
+
 
 
     // Ouvrir la section d'inscription
@@ -276,16 +314,20 @@
 
     let selectedLink; 
     
+    // let selectedRole = null; // Variable pour stocker le rôle sélectionné
+
     // Attacher les événements aux liens d'icônes pour ouvrir la modale avec le rôle correspondant
     document.querySelectorAll('.icon-link').forEach(link => {
         link.addEventListener('click', (event) => {
             event.preventDefault(); // Empêche la redirection immédiate
 
             const role = link.getAttribute("data-role");
+            selectedRole = role; // Stocke le rôle sélectionné
             selectedLink = link.href; // Stocke le lien cible
             openModal(role); // Ouvre la modale avec le rôle
         });
     });
+
 
 
     window.onload = () => {

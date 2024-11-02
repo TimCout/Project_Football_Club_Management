@@ -2,6 +2,12 @@ from flask import Flask, jsonify,request, render_template
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+import redis
+import uuid
+
+# Initialisation de Redis
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
 
 app = Flask(__name__)
 
@@ -65,9 +71,15 @@ def login():
     # Recherche de l'utilisateur dans la base de données
     user = users_collection.find_one({"username": username})
     if user and check_password_hash(user["password"], password):
+        # Créer un identifiant de session unique
+        session_id = str(uuid.uuid4())
+        redis_client.set(session_id, user["role"], ex=60)  # Session expire en 1 minute pour la démo
+
         return jsonify({"message": f"Welcome {user['role']}!", "role": user["role"]}), 200
     else:
         return jsonify({"error": "Invalid username or password"}), 401
+
+
 
 # Endpoint pour récupérer les utilisateurs (admin seulement)
 @app.route('/api/users', methods=['GET'])
@@ -77,16 +89,35 @@ def get_users():
     if role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
     
+    cached_users = redis_client.get("users")
+    if cached_users:
+        # Si les données sont en cache, les retourner directement
+        print("redis cache list user")
+        return jsonify(eval(cached_users))
+    
     users = users_collection.find({}, {"password": 0})  # On exclut les mots de passe
     user_list = [{"username": user["username"], "role": user["role"]} for user in users]
+
+     # Mettre en cache les données des utilisateurs
+    redis_client.set("users", str(user_list), ex=60)  
+    print("mongo list user")
     return jsonify(user_list)
 
 #home page
 @app.route('/api/clubs', methods=['GET'])
 def get_clubs():
-    print("API endpoint '/api/clubs' was hit.")
+    cached_clubs = redis_client.get("clubs")
+    
+    if cached_clubs:
+        # Si les données sont en cache, les retourner directement
+        print("redis cache club")
+        return jsonify(eval(cached_clubs))
     clubs = clubs_collection.find({}, {"_id": 1, "name": 1})
     club_list = [{"id": str(club["_id"]), "name": club["name"]} for club in clubs]
+    print("mongo club")
+
+    # Mettre en cache les données des clubs
+    redis_client.set("clubs", str(club_list), ex=60)
     return jsonify(club_list)
 
 #add page
@@ -176,6 +207,13 @@ def add_element():
 @app.route('/api/teams/<club_id>', methods=['GET'])
 def get_teams(club_id):
     print(f"API endpoint '/api/teams/{club_id}' was hit.")
+
+    # Vérifier si les données sont en cache
+    cached_teams = redis_client.get(f"teams:{club_id}")
+    if cached_teams:
+        print("Returning cached data for teams.")
+        return jsonify(eval(cached_teams))
+    
     club = db['clubs'].find_one({"_id": ObjectId(club_id)})
     if not club:
         print(f"No club found with ID: {club_id}")
@@ -190,11 +228,23 @@ def get_teams(club_id):
         if '_id' in team and 'name' in team:
             team_list.append({"id": str(team["_id"]), "name": team["name"]})
 
+    # Mettre en cache les données pour une durée d'une heure (60 secondes)
+    redis_client.set(f"teams:{club_id}", str(team_list), ex=60)
+
+
     return jsonify(team_list)
 
 @app.route('/api/players/<team_id>', methods=['GET'])
 def get_players(team_id):
     print(f"API endpoint '/api/players/{team_id}' was hit.")
+
+     # Vérifier si les données sont en cache
+    cached_players = redis_client.get(f"players:{team_id}")
+    if cached_players:
+        print("Returning cached data for players.")
+        return jsonify(eval(cached_players)) 
+    
+
     team = teams_collection.find_one({"_id": ObjectId(team_id)})
     if not team:
         print(f"No team found with ID: {team_id}")
@@ -205,6 +255,10 @@ def get_players(team_id):
         return jsonify([]), 200  # Return empty list if no players found
     players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
+
+    # Mettre en cache les données pour une durée d'une heure (60 secondes)
+    redis_client.set(f"players:{team_id}", str(player_list), ex=60)
+
     return jsonify(player_list)
 
 
@@ -219,11 +273,19 @@ def get_teams_by_club_name(club_name):
     
     club_id = club["_id"]
 
+    # Vérifier si les données sont en cache
+    cached_teams = redis_client.get(f"teams:{club_id}")
+    if cached_teams:
+        print("Returning cached data for teams.")
+        return jsonify(eval(cached_teams))
+
     # Recherche des équipes liées à ce club
     teams = teams_collection.find({"club_id": club_id}, {"_id": 1, "name": 1})
     
     # Formatage de la réponse pour inclure les identifiants et noms des équipes
     team_list = [{"id": str(team["_id"]), "name": team["name"]} for team in teams]
+    
+    redis_client.set(f"teams:{club_id}", str(team_list), ex=60)
     return jsonify(team_list)
 
 #récupérer les joueurs d'une équipe et d'un club
@@ -243,10 +305,19 @@ def get_players_by_club_and_team():
     team = teams_collection.find_one({"name": team_name, "club_id": club["_id"]})
     if not team:
         return jsonify({"error": "Team not found"}), 404
+    
+     # Vérifier si les données sont en cache
+    cached_players = redis_client.get(f"players:{team["_id"]}")
+    if cached_players:
+        print("Returning cached data for players.")
+        return jsonify(eval(cached_players)) 
 
     # Récupérer les joueurs de l'équipe et du club
     players = players_collection.find({"team_id": team["_id"], "club_id": club["_id"]}, {"_id": 1, "name": 1})
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
+
+    
+    redis_client.set(f"players:{team["_id"]}", str(player_list), ex=60)
     return jsonify(player_list)
 
 #récupère l'id du joueur en fonction de son nom, team et club

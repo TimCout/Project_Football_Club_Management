@@ -54,6 +54,11 @@ p {
     transform: translateY(-50%); /* Centre verticalement par rapport au conteneur */
 }
 
+.menu-icon-2 a {
+    margin-right: 15px;
+    text-decoration: none; /* Supprime le soulignement */
+    border: none; /* Supprime la bordure si elle est appliquée */
+}
 
 .Title_add_elem, .Title_delete_elem {
     margin-top: 120px;

@@ -3,11 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Manager</title>
+    <title>Club Manager - List of users</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
     <script>
+        // document.addEventListener("DOMContentLoaded", function() {
+        //     fetch('/api/users?role=admin')
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.error) {
+        //                 alert(data.error);
+        //             } else {
+        //                 const tableBody = document.getElementById("userTableBody");
+        //                 data.forEach(user => {
+        //                     const row = document.createElement("tr");
+        //                    // Condition pour masquer les boutons si c'est l'admin initial
+        //                    if (user.username === "Admin") {
+        //                         row.innerHTML = `
 
-    </script>
+        //                             <td>${user.username}</td>
+        //                             <td>${user.role}</td>
+        //                             <td>${user.first_name}</td>
+        //                             <td>${user.last_name}</td>
+        //                             <td>${user.email}</td>
+        //                             <td>Admin of admins</td>
+        //                         `;
+        //                     } else {
+        //                         // Condition pour masquer "Change Role" si l'utilisateur est déjà admin
+        //                         const changeRoleButton = user.role !== "admin"
+        //                             ? `<button class="update-role" onclick="changeUserRole('${user.id}')">Change Role</button>`
+        //                             : "";
+
+        //                         row.innerHTML = `
+ 
+        //                             <td>${user.username}</td>
+        //                             <td>${user.role}</td>
+        //                             <td>${user.first_name}</td>
+        //                             <td>${user.last_name}</td>
+        //                             <td>${user.email}</td>
+        //                             <td>
+        //                                 ${changeRoleButton}
+        //                                 <button class="delete-user" onclick="deleteUser('${user.id}')">Delete</button>
+        //                             </td>
+        //                         `;
+        //                     }
+
+        //                     tableBody.appendChild(row);
+        //                 });
+        //             }
+        //         })
+        //         .catch(error => console.error("Error fetching users:", error));
+        // });
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/api/users?role=admin')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById("userTableBody");
+                    // Vider le tableau avant de le remplir
+                    tableBody.innerHTML = '';
+                    
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        data.forEach(user => {
+                            const row = document.createElement("tr");
+                            // Condition pour masquer les boutons si c'est l'admin initial
+                            if (user.username === "Admin") {
+                                row.innerHTML = `
+                                    <td>${user.username}</td>
+                                    <td>${user.role}</td>
+                                    <td>${user.first_name}</td>
+                                    <td>${user.last_name}</td>
+                                    <td>${user.email}</td>
+                                    <td>/</td>
+                                `;
+                            } else {
+                                // Condition pour masquer "Change Role" si l'utilisateur est déjà admin
+                                const changeRoleButton = user.role !== "admin"
+                                    ? `<button class="update-role" onclick="changeUserRole('${user.id}')">Change Role</button>`
+                                    : "";
+
+                                row.innerHTML = `
+                                    <td>${user.username}</td>
+                                    <td>${user.role}</td>
+                                    <td>${user.first_name}</td>
+                                    <td>${user.last_name}</td>
+                                    <td>${user.email}</td>
+                                    <td>
+                                        ${changeRoleButton}
+                                        <button class="delete-user" onclick="deleteUser('${user.id}')">Delete</button>
+                                    </td>
+                                `;
+                            }
+
+                            tableBody.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching users:", error));
+        });
+
+        function loadUsers() {
+            fetch('/api/users?role=admin')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById("userTableBody");
+                    tableBody.innerHTML = ''; // Vider le tableau avant de le remplir
+                    
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        data.forEach(user => {
+                            const row = document.createElement("tr");
+                            if (user.username === "Admin") {
+                                row.innerHTML = `
+                                    <td>${user.username}</td>
+                                    <td>${user.role}</td>
+                                    <td>${user.first_name}</td>
+                                    <td>${user.last_name}</td>
+                                    <td>${user.email}</td>
+                                    <td>/</td>
+                                `;
+                            } else {
+                                const changeRoleButton = user.role !== "admin"
+                                    ? `<button class="update-role" onclick="changeUserRole('${user.id}')">Change Role</button>`
+                                    : "";
+
+                                row.innerHTML = `
+                                    <td>${user.username}</td>
+                                    <td>${user.role}</td>
+                                    <td>${user.first_name}</td>
+                                    <td>${user.last_name}</td>
+                                    <td>${user.email}</td>
+                                    <td>
+                                        ${changeRoleButton}
+                                        <button class="delete-user" onclick="deleteUser('${user.id}')">Delete</button>
+                                    </td>
+                                `;
+                            }
+
+                            tableBody.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching users:", error));
+        }
+
+        function changeUserRole(userId) {
+            fetch(`/api/users/${userId}/role`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: 'admin' })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Role updated successfully!");
+                    loadUsers(); // Recharger la liste des utilisateurs
+                } else {
+                    alert("Failed to update role.");
+                }
+            })
+            .catch(error => console.error("Error updating role:", error));
+        }
+
+        function deleteUser(userId) {
+            fetch(`/api/users/${userId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("User deleted successfully!");
+                    loadUsers(); // Recharger la liste des utilisateurs
+                } else {
+                    alert("Failed to delete user.");
+                }
+            })
+            .catch(error => console.error("Error deleting user:", error));
+        }
+
+    </script>    
 </head>
 <body>
     <div class="class-box">
@@ -24,7 +197,22 @@
         </div>
 
         <div class="border">
-
+            <h2>List of Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Les données des utilisateurs seront ajoutées ici dynamiquement -->
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

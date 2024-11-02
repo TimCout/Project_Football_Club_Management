@@ -348,7 +348,7 @@ input[type="password"] {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-input[type="text"] {
+input[type="text_2"] {
     width: 100%;
     padding: 8px;
     margin: 4px 0 12px;
@@ -388,4 +388,43 @@ button:hover {
 
 #signUpButton:hover {
     background-color: #104875; /* Une teinte plus foncée pour l'effet hover */
+}
+
+/* Dans votre fichier CSS */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* button {
+    padding: 5px 10px;
+    margin: 2px;
+    font-size: 14px;
+    cursor: pointer;
+} */
+
+button.update-role {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+button.delete-user {
+    background-color: #f44336;
+    color: white;
+    border: none;
 }

@@ -98,12 +98,49 @@ def get_users():
         return jsonify(eval(cached_users))
     
     users = users_collection.find({}, {"password": 0})  # On exclut les mots de passe
-    user_list = [{"username": user["username"], "role": user["role"]} for user in users]
+    user_list = [
+        {
+            "id": str(user["_id"]),
+            "username": user["username"],
+            "role": user["role"],
+            "first_name": user.get("first_name", ""),
+            "last_name": user.get("last_name", ""),
+            "email": user.get("email", "")
+        }
+        for user in users
+    ]
 
      # Mettre en cache les données des utilisateurs
     redis_client.set("users", str(user_list), ex=60)  
     print("mongo list user")
     return jsonify(user_list)
+
+# Endpoint pour changer le rôle d'un utilisateur
+@app.route('/api/users/<user_id>/role', methods=['PUT'])
+def change_role(user_id):
+    data = request.json
+    new_role = data.get("role")
+
+    if not new_role:
+        return jsonify({"error": "No role provided"}), 400
+    
+    result = users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": new_role}})
+    
+    if result.modified_count == 1:
+        return jsonify({"message": "Role updated successfully"}), 200
+    else:
+        return jsonify({"error": "Failed to update role"}), 400
+
+# Endpoint pour supprimer un utilisateur
+@app.route('/api/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    result = users_collection.delete_one({"_id": ObjectId(user_id)})
+    
+    if result.deleted_count == 1:
+        return jsonify({"message": "User deleted successfully"}), 200
+    else:
+        return jsonify({"error": "Failed to delete user"}), 400
+
 
 #home page
 @app.route('/api/clubs', methods=['GET'])

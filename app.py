@@ -1,6 +1,7 @@
 from flask import Flask, jsonify,request, render_template
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -9,6 +10,76 @@ db = mongo_client["database"]
 clubs_collection = db["clubs"]
 teams_collection = db["teams"]
 players_collection = db["players"]
+users_collection = db["users"]
+
+# Création du premier administrateur
+def create_admin():
+    existing_admin = users_collection.find_one({"username": "Admin"})
+    if not existing_admin:
+        admin_data = {
+            "username": "Admin",
+            "password": generate_password_hash("1234"),  # Hachage du mot de passe pour plus de sécurité
+            "role": "admin"
+        }
+        users_collection.insert_one(admin_data)
+        print("Admin created successfully")
+    else:
+        print("Admin already exists")
+
+create_admin()
+
+# Endpoint pour l'inscription des utilisateurs
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    data = request.json
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+    email = data.get("email")
+    username = data.get("username")
+    password = data.get("password")
+    
+    # Vérification si l'utilisateur existe déjà
+    if users_collection.find_one({"username": username}):
+        return jsonify({"error": "Username already exists"}), 409
+    
+    # Insertion du nouvel utilisateur
+    user_data = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "username": username,
+        "password": generate_password_hash(password),  # Hachage du mot de passe
+        "role": "user"  # Rôle utilisateur par défaut
+    }
+    users_collection.insert_one(user_data)
+    
+    return jsonify({"message": "User signed up successfully"}), 201
+
+# Endpoint pour la connexion
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    
+    # Recherche de l'utilisateur dans la base de données
+    user = users_collection.find_one({"username": username})
+    if user and check_password_hash(user["password"], password):
+        return jsonify({"message": f"Welcome {user['role']}!", "role": user["role"]}), 200
+    else:
+        return jsonify({"error": "Invalid username or password"}), 401
+
+# Endpoint pour récupérer les utilisateurs (admin seulement)
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    # Exemple d’autorisation simple pour vérifier le rôle d’admin
+    role = request.args.get("role")
+    if role != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    users = users_collection.find({}, {"password": 0})  # On exclut les mots de passe
+    user_list = [{"username": user["username"], "role": user["role"]} for user in users]
+    return jsonify(user_list)
 
 #home page
 @app.route('/api/clubs', methods=['GET'])

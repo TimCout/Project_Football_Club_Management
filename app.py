@@ -307,7 +307,7 @@ def get_players_by_club_and_team():
         return jsonify({"error": "Team not found"}), 404
     
      # Vérifier si les données sont en cache
-    cached_players = redis_client.get(f"players:{team["_id"]}")
+    cached_players = redis_client.get(f"players:{team['_id']}")
     if cached_players:
         print("Returning cached data for players.")
         return jsonify(eval(cached_players)) 
@@ -317,7 +317,7 @@ def get_players_by_club_and_team():
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
 
     
-    redis_client.set(f"players:{team["_id"]}", str(player_list), ex=60)
+    redis_client.set(f"players:{team['_id']}", str(player_list), ex=60)
     return jsonify(player_list)
 
 #récupère l'id du joueur en fonction de son nom, team et club

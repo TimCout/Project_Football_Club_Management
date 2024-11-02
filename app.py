@@ -34,7 +34,7 @@ def create_admin():
     else:
         print("Admin already exists")
 
-create_admin()
+ #create_admin()
 
 # Endpoint pour l'inscription des utilisateurs
 @app.route('/api/signup', methods=['POST'])
@@ -441,6 +441,8 @@ def update_player_team():
     )
 
     if result.matched_count > 0:
+        redis_client.delete(f"players:{new_team_id}")
+        redis_client.delete(f"players:{team_id}")
         return jsonify({"message": f"Player '{name}' successfully moved to new team '{new_team}' in club '{new_club}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -461,6 +463,7 @@ def update_player_club():
         return jsonify({"error": "Player not found"}), 404
 
     new_team_id = get_team_id(new_team)
+    team_id = get_team_id(team)
     new_club_id = get_club_id(new_club)
     if not new_team_id or not new_club_id:
         return jsonify({"error": "New team or club not found"}), 404
@@ -471,12 +474,15 @@ def update_player_club():
     )
 
     if result.matched_count > 0:
+        redis_client.delete(f"players:{new_team_id}")
+        redis_client.delete(f"players:{team_id}")
         return jsonify({"message": f"Player '{name}' updated successfully."})
+        
+        
     else:
         return jsonify({"error": "Update failed "}), 500
 
-    # Appel de la fonction pour déplacer le joueur
-    update_player_team(name, team, club, new_club, new_team)
+    
 
     
 

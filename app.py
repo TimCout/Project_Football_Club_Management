@@ -5,11 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import redis
 import uuid
 
+
 # Initialisation de Redis
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
 app = Flask(__name__)
+
 
 mongo_client = MongoClient("mongodb://localhost:27017/")
 db = mongo_client["database"]
@@ -127,6 +129,7 @@ def add_club(club_data):
         return {"message": "Club already exists", "club_id": str(existing_club["_id"])}
     
     club_id = clubs_collection.insert_one(club_data).inserted_id
+    redis_client.delete("clubs")
     return {"message": "Club added successfully", "club_id": str(club_id)}
 
 def add_team_to_club(club_id, team_data):
@@ -138,6 +141,7 @@ def add_team_to_club(club_id, team_data):
     team_data["players"] = []
     team_id = teams_collection.insert_one(team_data).inserted_id
     clubs_collection.update_one({"_id": ObjectId(club_id)}, {"$push": {"teams": team_id}})
+    redis_client.delete(f"teams:{club_id}")
     
     return {"message": "Team added successfully", "team_id": str(team_id)}
 
@@ -150,6 +154,7 @@ def add_player_to_team(club_id, team_id, player_data):
     player_data["team_id"] = ObjectId(team_id)
     player_id = players_collection.insert_one(player_data).inserted_id
     teams_collection.update_one({"_id": ObjectId(team_id)}, {"$push": {"players": player_id}})
+    redis_client.delete(f"players:{team_id}")
     
     return {"message": "Player added successfully", "player_id": str(player_id)}
 
@@ -391,6 +396,8 @@ def update_player_from_team(club_id, team_id, club_id_new, team_id_new, player_n
             {"$push": {"players": player["_id"]}}
         )
 
+        redis_client.delete(f"players:{team_id}") 
+        redis_client.delete(f"players:{team_id_new}")
         
         return {"message": f"Player '{player_name}' removed successfully from team '{team_id}'."}
     
@@ -491,6 +498,10 @@ def update_team_name():
     )
 
     if result.matched_count > 0:
+        team_data = teams_collection.find_one({"_id": team_id})
+        if team_data:
+            club_id = team_data.get("club_id")
+            redis_client.delete(f"teams:{club_id}")
         return jsonify({"message": f"Team '{team}' successfully renamed to '{new_name}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -513,6 +524,7 @@ def update_club_name():
     )
 
     if result.matched_count > 0:
+        redis_client.delete("clubs")
         return jsonify({"message": f"Club '{club}' successfully renamed to '{new_name}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -537,6 +549,7 @@ def delete_entity():
         players_collection.delete_many({"team_id": {"$in": team_ids}})
         teams_collection.delete_many({"club_id": club_id})
         clubs_collection.delete_one({"_id": club_id})
+        redis_client.delete("clubs")
         return jsonify({"message": f"Club '{club_name}', all associated teams and players deleted successfully."})
 
     team = teams_collection.find_one({"name": team_name, "club_id": club_id}) if team_name else None
@@ -546,6 +559,7 @@ def delete_entity():
             return jsonify({"error": "Team not found in the specified club"}), 404
         players_collection.delete_many({"team_id": team["_id"]})
         teams_collection.delete_one({"_id": team["_id"]})
+        redis_client.delete(f"teams:{club_id}")
         return jsonify({"message": f"Team '{team_name}' and all associated players deleted successfully."})
 
     player = players_collection.find_one({"name": player_name, "team_id": team["_id"]}) if player_name and team else None
@@ -554,6 +568,7 @@ def delete_entity():
         if not player:
             return jsonify({"error": "Player not found in the specified team"}), 404
         players_collection.delete_one({"_id": player["_id"]})
+        redis_client.delete(f"players:{team['_id']}")
         return jsonify({"message": f"Player '{player_name}' deleted successfully."})
 
     return jsonify({"error": "Invalid parameters"}), 400    

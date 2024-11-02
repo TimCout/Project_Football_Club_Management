@@ -2,8 +2,16 @@ from flask import Flask, jsonify,request, render_template
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+import redis
+import uuid
+
+
+# Initialisation de Redis
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
 
 app = Flask(__name__)
+
 
 mongo_client = MongoClient("mongodb://localhost:27017/")
 db = mongo_client["database"]
@@ -26,7 +34,7 @@ def create_admin():
     else:
         print("Admin already exists")
 
-create_admin()
+ #create_admin()
 
 # Endpoint pour l'inscription des utilisateurs
 @app.route('/api/signup', methods=['POST'])
@@ -65,9 +73,15 @@ def login():
     # Recherche de l'utilisateur dans la base de données
     user = users_collection.find_one({"username": username})
     if user and check_password_hash(user["password"], password):
+        # Créer un identifiant de session unique
+        session_id = str(uuid.uuid4())
+        redis_client.set(session_id, user["role"], ex=60)  # Session expire en 1 minute pour la démo
+
         return jsonify({"message": f"Welcome {user['role']}!", "role": user["role"]}), 200
     else:
         return jsonify({"error": "Invalid username or password"}), 401
+
+
 
 # Endpoint pour récupérer les utilisateurs (admin seulement)
 @app.route('/api/users', methods=['GET'])
@@ -77,16 +91,35 @@ def get_users():
     if role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
     
+    cached_users = redis_client.get("users")
+    if cached_users:
+        # Si les données sont en cache, les retourner directement
+        print("redis cache list user")
+        return jsonify(eval(cached_users))
+    
     users = users_collection.find({}, {"password": 0})  # On exclut les mots de passe
     user_list = [{"username": user["username"], "role": user["role"]} for user in users]
+
+     # Mettre en cache les données des utilisateurs
+    redis_client.set("users", str(user_list), ex=60)  
+    print("mongo list user")
     return jsonify(user_list)
 
 #home page
 @app.route('/api/clubs', methods=['GET'])
 def get_clubs():
-    print("API endpoint '/api/clubs' was hit.")
+    cached_clubs = redis_client.get("clubs")
+    
+    if cached_clubs:
+        # Si les données sont en cache, les retourner directement
+        print("redis cache club")
+        return jsonify(eval(cached_clubs))
     clubs = clubs_collection.find({}, {"_id": 1, "name": 1})
     club_list = [{"id": str(club["_id"]), "name": club["name"]} for club in clubs]
+    print("mongo club")
+
+    # Mettre en cache les données des clubs
+    redis_client.set("clubs", str(club_list), ex=60)
     return jsonify(club_list)
 
 #add page
@@ -96,6 +129,7 @@ def add_club(club_data):
         return {"message": "Club already exists", "club_id": str(existing_club["_id"])}
     
     club_id = clubs_collection.insert_one(club_data).inserted_id
+    redis_client.delete("clubs")
     return {"message": "Club added successfully", "club_id": str(club_id)}
 
 def add_team_to_club(club_id, team_data):
@@ -107,6 +141,7 @@ def add_team_to_club(club_id, team_data):
     team_data["players"] = []
     team_id = teams_collection.insert_one(team_data).inserted_id
     clubs_collection.update_one({"_id": ObjectId(club_id)}, {"$push": {"teams": team_id}})
+    redis_client.delete(f"teams:{club_id}")
     
     return {"message": "Team added successfully", "team_id": str(team_id)}
 
@@ -119,6 +154,7 @@ def add_player_to_team(club_id, team_id, player_data):
     player_data["team_id"] = ObjectId(team_id)
     player_id = players_collection.insert_one(player_data).inserted_id
     teams_collection.update_one({"_id": ObjectId(team_id)}, {"$push": {"players": player_id}})
+    redis_client.delete(f"players:{team_id}")
     
     return {"message": "Player added successfully", "player_id": str(player_id)}
 
@@ -176,6 +212,13 @@ def add_element():
 @app.route('/api/teams/<club_id>', methods=['GET'])
 def get_teams(club_id):
     print(f"API endpoint '/api/teams/{club_id}' was hit.")
+
+    # Vérifier si les données sont en cache
+    cached_teams = redis_client.get(f"teams:{club_id}")
+    if cached_teams:
+        print("Returning cached data for teams.")
+        return jsonify(eval(cached_teams))
+    
     club = db['clubs'].find_one({"_id": ObjectId(club_id)})
     if not club:
         print(f"No club found with ID: {club_id}")
@@ -190,11 +233,23 @@ def get_teams(club_id):
         if '_id' in team and 'name' in team:
             team_list.append({"id": str(team["_id"]), "name": team["name"]})
 
+    # Mettre en cache les données pour une durée d'une heure (60 secondes)
+    redis_client.set(f"teams:{club_id}", str(team_list), ex=60)
+
+
     return jsonify(team_list)
 
 @app.route('/api/players/<team_id>', methods=['GET'])
 def get_players(team_id):
     print(f"API endpoint '/api/players/{team_id}' was hit.")
+
+     # Vérifier si les données sont en cache
+    cached_players = redis_client.get(f"players:{team_id}")
+    if cached_players:
+        print("Returning cached data for players.")
+        return jsonify(eval(cached_players)) 
+    
+
     team = teams_collection.find_one({"_id": ObjectId(team_id)})
     if not team:
         print(f"No team found with ID: {team_id}")
@@ -205,6 +260,10 @@ def get_players(team_id):
         return jsonify([]), 200  # Return empty list if no players found
     players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
+
+    # Mettre en cache les données pour une durée d'une heure (60 secondes)
+    redis_client.set(f"players:{team_id}", str(player_list), ex=60)
+
     return jsonify(player_list)
 
 
@@ -219,11 +278,19 @@ def get_teams_by_club_name(club_name):
     
     club_id = club["_id"]
 
+    # Vérifier si les données sont en cache
+    cached_teams = redis_client.get(f"teams:{club_id}")
+    if cached_teams:
+        print("Returning cached data for teams.")
+        return jsonify(eval(cached_teams))
+
     # Recherche des équipes liées à ce club
     teams = teams_collection.find({"club_id": club_id}, {"_id": 1, "name": 1})
     
     # Formatage de la réponse pour inclure les identifiants et noms des équipes
     team_list = [{"id": str(team["_id"]), "name": team["name"]} for team in teams]
+    
+    redis_client.set(f"teams:{club_id}", str(team_list), ex=60)
     return jsonify(team_list)
 
 #récupérer les joueurs d'une équipe et d'un club
@@ -243,10 +310,19 @@ def get_players_by_club_and_team():
     team = teams_collection.find_one({"name": team_name, "club_id": club["_id"]})
     if not team:
         return jsonify({"error": "Team not found"}), 404
+    
+     # Vérifier si les données sont en cache
+    cached_players = redis_client.get(f"players:{team['_id']}")
+    if cached_players:
+        print("Returning cached data for players.")
+        return jsonify(eval(cached_players)) 
 
     # Récupérer les joueurs de l'équipe et du club
     players = players_collection.find({"team_id": team["_id"], "club_id": club["_id"]}, {"_id": 1, "name": 1})
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
+
+    
+    redis_client.set(f"players:{team['_id']}", str(player_list), ex=60)
     return jsonify(player_list)
 
 #récupère l'id du joueur en fonction de son nom, team et club
@@ -320,6 +396,8 @@ def update_player_from_team(club_id, team_id, club_id_new, team_id_new, player_n
             {"$push": {"players": player["_id"]}}
         )
 
+        redis_client.delete(f"players:{team_id}") 
+        redis_client.delete(f"players:{team_id_new}")
         
         return {"message": f"Player '{player_name}' removed successfully from team '{team_id}'."}
     
@@ -363,6 +441,8 @@ def update_player_team():
     )
 
     if result.matched_count > 0:
+        redis_client.delete(f"players:{new_team_id}")
+        redis_client.delete(f"players:{team_id}")
         return jsonify({"message": f"Player '{name}' successfully moved to new team '{new_team}' in club '{new_club}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -383,6 +463,7 @@ def update_player_club():
         return jsonify({"error": "Player not found"}), 404
 
     new_team_id = get_team_id(new_team)
+    team_id = get_team_id(team)
     new_club_id = get_club_id(new_club)
     if not new_team_id or not new_club_id:
         return jsonify({"error": "New team or club not found"}), 404
@@ -393,12 +474,15 @@ def update_player_club():
     )
 
     if result.matched_count > 0:
+        redis_client.delete(f"players:{new_team_id}")
+        redis_client.delete(f"players:{team_id}")
         return jsonify({"message": f"Player '{name}' updated successfully."})
+        
+        
     else:
         return jsonify({"error": "Update failed "}), 500
 
-    # Appel de la fonction pour déplacer le joueur
-    update_player_team(name, team, club, new_club, new_team)
+    
 
     
 
@@ -420,6 +504,10 @@ def update_team_name():
     )
 
     if result.matched_count > 0:
+        team_data = teams_collection.find_one({"_id": team_id})
+        if team_data:
+            club_id = team_data.get("club_id")
+            redis_client.delete(f"teams:{club_id}")
         return jsonify({"message": f"Team '{team}' successfully renamed to '{new_name}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -442,6 +530,7 @@ def update_club_name():
     )
 
     if result.matched_count > 0:
+        redis_client.delete("clubs")
         return jsonify({"message": f"Club '{club}' successfully renamed to '{new_name}'."})
     else:
         return jsonify({"error": "Update failed"}), 500
@@ -466,6 +555,7 @@ def delete_entity():
         players_collection.delete_many({"team_id": {"$in": team_ids}})
         teams_collection.delete_many({"club_id": club_id})
         clubs_collection.delete_one({"_id": club_id})
+        redis_client.delete("clubs")
         return jsonify({"message": f"Club '{club_name}', all associated teams and players deleted successfully."})
 
     team = teams_collection.find_one({"name": team_name, "club_id": club_id}) if team_name else None
@@ -475,6 +565,7 @@ def delete_entity():
             return jsonify({"error": "Team not found in the specified club"}), 404
         players_collection.delete_many({"team_id": team["_id"]})
         teams_collection.delete_one({"_id": team["_id"]})
+        redis_client.delete(f"teams:{club_id}")
         return jsonify({"message": f"Team '{team_name}' and all associated players deleted successfully."})
 
     player = players_collection.find_one({"name": player_name, "team_id": team["_id"]}) if player_name and team else None
@@ -483,6 +574,7 @@ def delete_entity():
         if not player:
             return jsonify({"error": "Player not found in the specified team"}), 404
         players_collection.delete_one({"_id": player["_id"]})
+        redis_client.delete(f"players:{team['_id']}")
         return jsonify({"message": f"Player '{player_name}' deleted successfully."})
 
     return jsonify({"error": "Invalid parameters"}), 400    

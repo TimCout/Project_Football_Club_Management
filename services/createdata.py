@@ -13,8 +13,8 @@ users_collection = db['users']
 def generate_name(prefix, index):
     return f"{prefix} {index}"
 
-NUM_CLUBS = 1
-NUM_TEAMS_PER_CLUB = 1
+NUM_CLUBS = 5
+NUM_TEAMS_PER_CLUB = 10
 NUM_PLAYERS_PER_TEAM = 1000
 NUM_USERS = 5
 
@@ -67,7 +67,7 @@ def add_users(num_users):
         user_data = {
             "_id": ObjectId(),
             "username": f"user_{i + 1}",
-            "password": f"password_{random.randint(100, 999)}",
+            "password": "1234",
             "role": "user"
         }
         users_collection.insert_one(user_data)

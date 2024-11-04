@@ -212,15 +212,15 @@
 
             if (!oldName && fromTeam) {
                 await sendRequest('/update_team_name', data);
-                return;  // Arrête l'exécution ici si cette condition est remplie
+                return;  
             }
 
             if (!oldName && !fromTeam && fromClub) {
                 await sendRequest('/update_club_name', data);
-                return;  // Arrête l'exécution ici si cette condition est remplie
+                return;  
             }
 
-            // Vérifiez et envoyez chaque requête conditionnelle
+            
             if (oldName && newName && oldName !== newName) {
                 await sendRequest('/update_player_name', data);
             }
@@ -234,7 +234,7 @@
             }
         }
 
-        // Fonction pour envoyer les requêtes avec fetch
+        
         async function sendRequest(url, data) {
             try {
                 const response = await fetch(url, {

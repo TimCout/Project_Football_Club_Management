@@ -58,7 +58,7 @@
                 const players = await response.json();
 
                 const playersList = document.getElementById(playerElementId);
-                playersList.innerHTML = ''; // Vider la liste existante avant d'ajouter de nouveaux joueurs
+                playersList.innerHTML = ''; // Clean existant list before adding new player
 
                 if (players.length === 0) {
                     const noPlayersItem = document.createElement('option');

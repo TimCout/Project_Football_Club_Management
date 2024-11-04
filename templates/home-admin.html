@@ -5,91 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Club Manager</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
-    <!-- <script>
-        async function loadClubs() {
-            try {
-                const response = await fetch('/api/clubs');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const clubs = await response.json();
-
-                const clubsList = document.getElementById('clubs');
-                clubs.forEach(club => {
-                    const option = document.createElement('option');
-                    option.value = club.id;
-                    option.textContent = club.name;
-                    clubsList.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading clubs:', error);
-            }
-        }
-
-        async function loadTeams(clubId) {
-            try {
-                const response = await fetch(`/api/teams/${clubId}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const teams = await response.json();
-                
-                const teamsList = document.getElementById('teams');
-                teamsList.innerHTML = "";
-                teams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.id;
-                    option.textContent = team.name;
-                    teamsList.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading teams:', error);
-            }
-        }
-
-        async function onClubOkClick() {
-            const selectedClubId = document.getElementById('clubs').value;
-            if (selectedClubId) {
-                await loadTeams(selectedClubId);
-            } else {
-                console.warn('No club selected.');
-            }
-        }
-
-        async function loadPlayers(teamId) {
-            try {
-                const response = await fetch(`/api/players/${teamId}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const players = await response.json();
-                
-                // Clear existing player options
-                const playersList = document.getElementById('players34');
-                playersList.innerHTML = "";
-                players.forEach(player => {
-                    const li = document.createElement('li');
-                    li.textContent = `${player.name}`;
-                    playersList.appendChild(li);
-                });
-            } catch (error) {
-                console.error('Error loading players:', error);
-            }
-        }
-
-        async function onTeamOkClick() {
-            const selectedTeamId = document.getElementById('teams').value;
-            if (selectedTeamId) {
-                await loadPlayers(selectedTeamId);
-            } else {
-                console.warn('No team selected.');
-            }
-        }
-
-        window.onload = () => {
-            loadClubs();
-        };
-    </script> -->
 
     <script>
         async function loadClubs(elementId) {
@@ -144,7 +59,7 @@
                 const players = await response.json();
 
                 const playersList = document.getElementById(playerElementId);
-                playersList.innerHTML = ''; // Vider la liste existante avant d'ajouter de nouveaux joueurs
+                playersList.innerHTML = ''; // Clean the initial list before adding new players
 
                 if (players.length === 0) {
                     const noPlayersItem = document.createElement('li');

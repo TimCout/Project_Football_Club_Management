@@ -35,7 +35,7 @@
                 <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
                 <h2 id="modalTitle">Connection</h2>
         
-                <!-- Section pour le login -->
+                
                 <div id="loginSection">
                     <input type="text_2" id="username" placeholder="Username">
                     <input type="password" id="password" placeholder="Password">
@@ -43,7 +43,6 @@
                     <button id="signUpButton" onclick="openSignUp()" style="display: none;">Sign-up</button>
                 </div>
         
-                <!-- Section pour le sign-up (affichée seulement pour "user") -->
                 <div id="signUpSection" style="display: none;">
                     <input type="text_2" id="firstName" placeholder="First Name">
                     <input type="text_2" id="lastName" placeholder="Last Name">
@@ -142,12 +141,11 @@
 
     let selectedRole;
 
-    // Afficher la modale de connexion ou d'inscription
     function openModal(role) {
         selectedRole = role;
         document.getElementById("loginModal").style.display = "block";
         
-        // Modifier le titre et ajuster les boutons selon le rôle
+        // Change title and adjust buttons according to role
         if (role === "admin") {
             document.getElementById("modalTitle").textContent = "Admin Login";
             document.getElementById("signUpButton").style.display = "none";
@@ -156,61 +154,10 @@
             document.getElementById("signUpButton").style.display = "block";
         }
 
-        // Afficher la section login et cacher la section sign-up
+        // Show the login section and hide the sign-up section
         document.getElementById("loginSection").style.display = "block";
         document.getElementById("signUpSection").style.display = "none";
     }
-
-    //     function submitLogin() {
-    //     const username = document.getElementById("username").value;
-    //     const password = document.getElementById("password").value;
-
-    //     if (username && password) {
-    //         // Fermez la modal de login
-    //         closeModal();
-            
-    //         // Redirige vers la page enregistrée précédemment
-    //         window.location.href = selectedLink; // Redirection vers la page de rôle
-    //     } else {
-    //         alert("Veuillez remplir tous les champs.");
-    //     }
-    // }
-
-        // // Function to submit the login request to the API
-        // async function submitLogin() {
-        //     const username = document.getElementById("username").value;
-        //     const password = document.getElementById("password").value;
-
-        //     if (username && password) {
-        //         try {
-        //             const response = await fetch('/api/login', {
-        //                 method: 'POST',
-        //                 headers: { 'Content-Type': 'application/json' },
-        //                 body: JSON.stringify({ username, password })
-        //             });
-
-        //             const data = await response.json();
-
-        //             if (response.ok) {
-        //                 // Vérifie le rôle de l'utilisateur
-        //                 if (data.role === 'admin') {
-        //                     window.location.href = '/home-admin.html'; // Redirige vers la page admin
-        //                 } else if (data.role === 'user') {
-        //                     window.location.href = '/home-user.html'; // Redirige vers la page utilisateur
-        //                 } else {
-        //                     alert("Role inconnu.Veuillez vous inscrire d'abord !"); // Gère les autres rôles si nécessaire
-        //                 }
-        //             } else {
-        //                 alert(data.error); // Affiche l'erreur de connexion
-        //             }
-        //         } catch (error) {
-        //             console.error('Error during login:', error);
-        //             alert("Failed to connect. Please try again later.");
-        //         }
-        //     } else {
-        //         alert("Please fill in all fields.");
-        //     }
-        // }
 
         async function submitLogin() {
         const username = document.getElementById("username").value;
@@ -227,18 +174,18 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Vérifie le rôle de l'utilisateur
-                    if (data.role === selectedRole) { // Vérifie si le rôle correspond à celui de l'icône
+                    // Checks user role
+                    if (data.role === selectedRole) { 
                         if (data.role === 'admin') {
-                            window.location.href = '/home-admin.html'; // Redirige vers la page admin
+                            window.location.href = '/home-admin.html'; 
                         } else if (data.role === 'user') {
-                            window.location.href = '/home-user.html'; // Redirige vers la page utilisateur
+                            window.location.href = '/home-user.html';
                         }
                     } else {
-                        alert("You are not in the right place to log in. Please check the selected icon."); // Message d'erreur
+                        alert("You are not in the right place to log in. Please check the selected icon."); 
                     }
                 } else {
-                    alert(data.error); // Affiche l'erreur de connexion
+                    alert(data.error);
                 }
             } catch (error) {
                 console.error('Error during login:', error);
@@ -251,33 +198,16 @@
 
 
 
-    // Ouvrir la section d'inscription
+    // Open registration section
     function openSignUp() {
         document.getElementById("modalTitle").textContent = "User Sign-up";
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("signUpSection").style.display = "block";
     }
 
-    // Fonction pour fermer la modale
     function closeModal() {
         document.getElementById("loginModal").style.display = "none";
     }
-
-    // // Fonction pour soumettre l'inscription
-    // function submitSignUp() {
-    //     const firstName = document.getElementById("firstName").value;
-    //     const lastName = document.getElementById("lastName").value;
-    //     const email = document.getElementById("email").value;
-    //     const username = document.getElementById("signupUsername").value;
-    //     const password = document.getElementById("signupPassword").value;
-
-    //     if (firstName && lastName && email && username && password) {
-    //         closeModal();
-    //         alert("Registration complete. Please log in.");
-    //     } else {
-    //         alert("Please fill in all fields.");
-    //     }
-    // }
 
     // Function to submit the signup request to the API
     async function submitSignUp() {
@@ -312,19 +242,17 @@
         }
     }
 
-    let selectedLink; 
-    
-    // let selectedRole = null; // Variable pour stocker le rôle sélectionné
+    let selectedLink;
 
-    // Attacher les événements aux liens d'icônes pour ouvrir la modale avec le rôle correspondant
+    // Attach events to icon links to open the modal with the corresponding role
     document.querySelectorAll('.icon-link').forEach(link => {
         link.addEventListener('click', (event) => {
-            event.preventDefault(); // Empêche la redirection immédiate
+            event.preventDefault();
 
             const role = link.getAttribute("data-role");
-            selectedRole = role; // Stocke le rôle sélectionné
-            selectedLink = link.href; // Stocke le lien cible
-            openModal(role); // Ouvre la modale avec le rôle
+            selectedRole = role; 
+            selectedLink = link.href; 
+            openModal(role);
         });
     });
 

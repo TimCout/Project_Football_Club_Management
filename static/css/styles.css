@@ -1,17 +1,15 @@
-/* Style de la page */
 /* Background image style */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     text-align: center;
-    background-image: url('../images/programme-matchs-tunisie-numérique-7.jpg'); /* Remplacez par le chemin de votre image */
-    background-size: cover; /* Fait en sorte que l'image couvre toute la page */
-    background-position: center; /* Centre l'image */
-    background-repeat: no-repeat; /* Évite que l'image se répète */
-    background-attachment: fixed; /* Fixe l'image de fond pour qu'elle ne bouge pas au scroll */
+    background-image: url('../images/programme-matchs-tunisie-numérique-7.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat; 
+    background-attachment: fixed; 
 }
-
 
 h1 {
     margin-top: 10px;
@@ -24,7 +22,6 @@ p {
     padding-bottom: 10px;
 }
 
-/* Style du menu horizontal */
 .menu {
     display: flex;
     justify-content: space-around;
@@ -42,22 +39,22 @@ p {
 .header-container {
     position: relative;
     display: flex;
-    justify-content: center; /* Centre le titre */
+    justify-content: center; 
     align-items: center;
     padding: 20px;
 }
 
 .menu-icon-2 {
     position: absolute;
-    right: 20px; /* Place l'icône à droite de l'écran */
+    right: 20px;
     top: 50%;
-    transform: translateY(-50%); /* Centre verticalement par rapport au conteneur */
+    transform: translateY(-50%);
 }
 
 .menu-icon-2 a {
     margin-right: 15px;
-    text-decoration: none; /* Supprime le soulignement */
-    border: none; /* Supprime la bordure si elle est appliquée */
+    text-decoration: none; 
+    border: none; 
 }
 
 .Title_add_elem, .Title_delete_elem {
@@ -74,7 +71,7 @@ p {
     flex-grow: 1;
     text-align: center;
     position: relative;
-    max-width: 30%; /* Colonne avec une largeur uniforme */
+    max-width: 30%;
 }
 
 .dropdown h2, .column h2 {
@@ -97,13 +94,11 @@ p {
     border-radius: 4px;
 }
 
-/* Style pour l'input en mode focus */
 .dropdown input:focus, .column input:focus {
     outline: none;
     border-color: #007bff;
 }
 
-/* Style pour "Add a new element" */
 .add-element {
     margin-top: 40px;
     width: 100%;
@@ -113,10 +108,9 @@ p {
 }
 
 .add-element .dropdown, .add-element .column {
-    max-width: 30%; /* Assure que toutes les colonnes sont de la même largeur */
+    max-width: 30%; 
 }
 
-/* Style pour "Add a new element" */
 .delete-element {
     margin-top: 40px;
     width: 100%;
@@ -126,20 +120,20 @@ p {
 }
 
 .delete-element .dropdown, .delete-element .column {
-    max-width: 30%; /* Assure que toutes les colonnes sont de la même largeur */
+    max-width: 30%; 
 }
 
 .class-box {
     position: relative;
-    min-width: 100vw; /* Largeur complète de l'écran */
-    min-height: 100vh; /* Hauteur minimale de l'écran pour couvrir toute la page */
-    border: 1px solid rgba(0, 0, 0, 0.5); /* Bordure semi-transparente */
-    background-color: rgba(255, 255, 255, 0.4); /* Arrière-plan légèrement transparent */
+    min-width: 100vw; 
+    min-height: 100vh; 
+    border: 1px solid rgba(0, 0, 0, 0.5); 
+    background-color: rgba(255, 255, 255, 0.4); 
     display: flex;
     flex-direction: column;
     border-radius: 8px;
     padding: 20px;
-    box-sizing: border-box; /* Inclut le padding dans la taille totale */
+    box-sizing: border-box; 
     font-family: Arial, sans-serif;
     color: #000000;
 }
@@ -150,17 +144,17 @@ p {
     padding-bottom: 70px;
 }
 
-/* Style de la barre d'icônes */
+
 .icon-group {
     display: flex;
-    gap: 100px; /* Espacement entre les icônes */
-    justify-content: center; /* Centre les icônes */
-    margin-top: 20px; /* Espace au-dessus du groupe d'icônes */
+    gap: 100px; 
+    justify-content: center; 
+    margin-top: 20px;
 }
 
 
 .icon {
-    width: 70px; /* Taille des icônes */
+    width: 70px; 
     height: 70px;
     cursor: pointer;
     transition: transform 0.2s;
@@ -174,10 +168,10 @@ p {
 }
 
 .icon:hover {
-    transform: scale(3.1); /* Agrandissement au survol */
+    transform: scale(3.1);
 }
 .icon-2:hover {
-    transform: scale(2.1); /* Agrandissement au survol */
+    transform: scale(2.1);
 }
 
 .icon-item {
@@ -188,16 +182,16 @@ p {
 .icon-item span {
     display: block;
     margin-top: 5px;
-    font-size: 20px; /* Taille du texte */
-    color: #333; /* Couleur du texte */
+    font-size: 20px; 
+    color: #333;
 }
 
-/* Styles de base pour les boutons */
+
 .button-group {
     display: flex;
-    gap: 10px; /* Espace entre les boutons */
+    gap: 10px;
     margin-top: 10px;
-    justify-content: center; /* Centre les boutons sous chaque input */
+    justify-content: center;
 }
 
 .add-button, .select-button, .delete-button {
@@ -209,9 +203,9 @@ p {
     transition: background-color 0.3s;
 }
 
-/* Couleurs et styles pour chaque bouton */
+
 .add-button {
-    background-color: #28a745; /* Vert pour "Add" */
+    background-color: #28a745;
     color: white;
 }
 
@@ -220,7 +214,7 @@ p {
 }
 
 .delete-button {
-    background-color: #db3e39; /* Vert pour "Add" */
+    background-color: #db3e39;
     color: white;
 }
 
@@ -229,7 +223,7 @@ p {
 }
 
 .select-button {
-    background-color: #007bff; /* Bleu pour "Select" */
+    background-color: #007bff;
     color: white;
 }
 
@@ -238,17 +232,16 @@ p {
 }
 
 
-/* Style pour le bouton unique "Add" */
 .single-button {
     display: flex;
     justify-content: center;
-    margin-top: 50px; /* Espacement au-dessus du bouton */
+    margin-top: 50px;
 }
 
 .single-button .add-button {
     padding: 10px 20px;
     font-size: 1em;
-    background-color: #28a745; /* Vert pour "Add" */
+    background-color: #28a745;
     color: white;
     border: none;
     border-radius: 4px;
@@ -263,14 +256,13 @@ p {
 .single-button-delete {
     display: flex;
     justify-content: center;
-    margin-top: 50px; /* Espacement au-dessus du bouton */
+    margin-top: 50px;
 }
 
 .single-button-delete .delete-button {
     padding: 10px 20px;
     font-size: 1em;
-    background-color: #cc1414; /* Vert pour "Add" */
-    color: white;
+    background-color: #cc1414;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -284,13 +276,13 @@ p {
 .single-button-modify {
     display: flex;
     justify-content: center;
-    margin-top: 50px; /* Espacement au-dessus du bouton */
+    margin-top: 50px; 
 }
 
 .single-button-modify .modify-button {
     padding: 10px 20px;
     font-size: 1em;
-    background-color: #1266d3; /* Vert pour "Add" */
+    background-color: #1266d3;
     color: white;
     border: none;
     border-radius: 4px;
@@ -302,23 +294,22 @@ p {
     background-color: #1430cc;
 }
 
-/* Style de la modale */
+
 #loginModal {
-    display: none; /* Masquer par défaut */
-    position: fixed; /* Position fixe */
-    left: 50%; /* Centrer horizontalement */
-    top: 50%; /* Centrer verticalement */
-    transform: translate(-50%, -50%); /* Ajuster pour centrer complètement */
-    z-index: 1000; /* Z-index élevé pour être au-dessus du contenu */
-    background-color: rgba(255, 255, 255, 0.9); /* Fond blanc légèrement transparent */
-    border-radius: 8px; /* Coins arrondis */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre pour un effet 3D */
+    display: none; 
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); 
+    z-index: 1000; 
+    background-color: rgba(255, 255, 255, 0.9); 
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
     padding: 20px; 
-    width: 500px; /* Largeur fixe ou ajustable selon vos besoins */
+    width: 500px; 
     text-align: center;
 }
 
-/* Supprime le style de centrage dans .modal-content */
 .modal-content {
     background-color: #fefefe;
     padding: 20px;
@@ -373,7 +364,7 @@ button {
 button:hover {
     background-color: #45a049;
 }
-/* Aligner "Login" et "Sign-up" */
+
 #loginSection button,
 #signUpSection button {
     width: 100px;
@@ -381,10 +372,9 @@ button:hover {
     display: block;
 }
 
-/* Style de "Sign-up" */
 #signUpButton {
     color: white;
-    background-color: #1e75bd; /* Remplacez par la couleur de votre choix */
+    background-color: #1e75bd;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -392,10 +382,9 @@ button:hover {
 }
 
 #signUpButton:hover {
-    background-color: #104875; /* Une teinte plus foncée pour l'effet hover */
+    background-color: #104875; 
 }
 
-/* Dans votre fichier CSS */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -415,12 +404,6 @@ tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* button {
-    padding: 5px 10px;
-    margin: 2px;
-    font-size: 14px;
-    cursor: pointer;
-} */
 
 button.update-role {
     background-color: #4CAF50;

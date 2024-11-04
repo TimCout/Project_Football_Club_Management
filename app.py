@@ -10,9 +10,7 @@ import time
 # Initializing redis
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-
 app = Flask(__name__)
-
 
 mongo_client = MongoClient("mongodb://localhost:27017/")
 db = mongo_client["database"]
@@ -197,7 +195,6 @@ def add_player_to_team(club_id, team_id, player_data):
     
     return {"message": "Player added successfully", "player_id": str(player_id)}
 
-# New endpoint for adding elements
 @app.route('/api/add-element', methods=['POST'])
 def add_element():
     data = request.json
@@ -205,7 +202,6 @@ def add_element():
     team_name = data.get("team")
     player_name = data.get("player")
 
-    # Initialize response message
     response = {}
 
     # Step 1: Handle Club
@@ -294,8 +290,8 @@ def get_players(team_id):
     player_ids = team.get("players", [])
     if not player_ids:
         print(f"No players found for team ID: {team_id}")
-        return jsonify([]), 200  # Return empty list if no players found
-    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
+        return jsonify([]), 200
+    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
 
 

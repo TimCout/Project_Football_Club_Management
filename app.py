@@ -5,13 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import redis
 import uuid
 
-
-# Initialisation de Redis
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-
 app = Flask(__name__)
-
 
 mongo_client = MongoClient("mongodb://localhost:27017/")
 db = mongo_client["database"]
@@ -83,21 +79,18 @@ def login():
 
 
 
-# Endpoint pour récupérer les utilisateurs (admin seulement)
 @app.route('/api/users', methods=['GET'])
 def get_users():
-    # Exemple d’autorisation simple pour vérifier le rôle d’admin
     role = request.args.get("role")
     if role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
     
     cached_users = redis_client.get("users")
     if cached_users:
-        # Si les données sont en cache, les retourner directement
         print("redis cache list user")
         return jsonify(eval(cached_users))
     
-    users = users_collection.find({}, {"password": 0})  # On exclut les mots de passe
+    users = users_collection.find({}, {"password": 0})
     user_list = [
         {
             "id": str(user["_id"]),
@@ -110,7 +103,6 @@ def get_users():
         for user in users
     ]
 
-     # Mettre en cache les données des utilisateurs
     redis_client.set("users", str(user_list), ex=60)  
     print("mongo list user")
     return jsonify(user_list)
@@ -148,14 +140,12 @@ def get_clubs():
     cached_clubs = redis_client.get("clubs")
     
     if cached_clubs:
-        # Si les données sont en cache, les retourner directement
         print("redis cache club")
         return jsonify(eval(cached_clubs))
     clubs = clubs_collection.find({}, {"_id": 1, "name": 1})
     club_list = [{"id": str(club["_id"]), "name": club["name"]} for club in clubs]
     print("mongo club")
 
-    # Mettre en cache les données des clubs
     redis_client.set("clubs", str(club_list), ex=60)
     return jsonify(club_list)
 
@@ -195,7 +185,6 @@ def add_player_to_team(club_id, team_id, player_data):
     
     return {"message": "Player added successfully", "player_id": str(player_id)}
 
-# New endpoint for adding elements
 @app.route('/api/add-element', methods=['POST'])
 def add_element():
     data = request.json
@@ -203,7 +192,6 @@ def add_element():
     team_name = data.get("team")
     player_name = data.get("player")
 
-    # Initialize response message
     response = {}
 
     # Step 1: Handle Club
@@ -250,7 +238,6 @@ def add_element():
 def get_teams(club_id):
     print(f"API endpoint '/api/teams/{club_id}' was hit.")
 
-    # Vérifier si les données sont en cache
     cached_teams = redis_client.get(f"teams:{club_id}")
     if cached_teams:
         print("Returning cached data for teams.")
@@ -270,8 +257,7 @@ def get_teams(club_id):
         if '_id' in team and 'name' in team:
             team_list.append({"id": str(team["_id"]), "name": team["name"]})
 
-    # Mettre en cache les données pour une durée d'une heure (60 secondes)
-    redis_client.set(f"teams:{club_id}", str(team_list), ex=60)
+    redis_client.set(f"teams:{club_id}", str(team_list), ex=60) #cache duration of 60 seconds
 
 
     return jsonify(team_list)
@@ -280,7 +266,6 @@ def get_teams(club_id):
 def get_players(team_id):
     print(f"API endpoint '/api/players/{team_id}' was hit.")
 
-     # Vérifier si les données sont en cache
     cached_players = redis_client.get(f"players:{team_id}")
     if cached_players:
         print("Returning cached data for players.")
@@ -294,11 +279,10 @@ def get_players(team_id):
     player_ids = team.get("players", [])
     if not player_ids:
         print(f"No players found for team ID: {team_id}")
-        return jsonify([]), 200  # Return empty list if no players found
-    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})  # Adjusted to only select name and _id
+        return jsonify([]), 200
+    players = db['players'].find({"_id": {"$in": player_ids}}, {"_id": 1, "name": 1})
     player_list = [{"id": str(player["_id"]), "name": player["name"]} for player in players]
 
-    # Mettre en cache les données pour une durée d'une heure (60 secondes)
     redis_client.set(f"players:{team_id}", str(player_list), ex=60)
 
     return jsonify(player_list)
